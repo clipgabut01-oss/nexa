@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aktivasi Kartu</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #050505;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      padding: 30px 22px;
+      border-radius: 20px;
+      background: #101010;
+      border: 1px solid #252525;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #aaa;
+      margin-bottom: 25px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: white;
+      color: black;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>Aktivasi Kartu</h1>
+
+    <p>
+      Selamat datang. Tekan tombol di bawah untuk memulai aktivasi.
+    </p>
+
+    <button onclick="aktivasi()">
+      Aktifkan Sekarang
+    </button>
+  </div>
+
+  <script>
+    function aktivasi() {
+      alert("Sistem aktivasi sedang disiapkan.");
+    }
+  </script>
+
+</body>
+  </html>
