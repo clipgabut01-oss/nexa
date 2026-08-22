@@ -15,8 +15,8 @@
       margin: 0;
       min-height: 100vh;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       background: #050505;
       color: white;
       font-family: Arial, sans-serif;
@@ -29,8 +29,8 @@
     }
 
     h1 {
-      margin: 0;
       text-align: center;
+      margin: 0;
       font-size: 34px;
     }
 
@@ -38,17 +38,17 @@
       text-align: center;
       color: #888;
       margin-top: 8px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .card-info {
-      padding: 12px;
       background: #111;
       border: 1px solid #222;
       border-radius: 10px;
+      padding: 12px;
       text-align: center;
-      margin-bottom: 20px;
       color: #aaa;
+      margin-bottom: 20px;
     }
 
     #status {
@@ -78,7 +78,7 @@
     }
 
     input:focus {
-      border-color: #fff;
+      border-color: white;
     }
 
     button {
@@ -95,8 +95,7 @@
     }
 
     button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+      opacity: .5;
     }
 
     .secondary {
@@ -111,7 +110,30 @@
       border: 1px solid #333;
     }
 
+    .section {
+      background: #0c0c0c;
+      border: 1px solid #222;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .section h2 {
+      margin: 0 0 5px;
+      font-size: 19px;
+    }
+
+    .section-description {
+      color: #777;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
     #editArea {
+      display: none;
+    }
+
+    #changePinArea {
       display: none;
     }
 
@@ -135,19 +157,17 @@
     Kelola Kartu Google Review
   </p>
 
-
   <div class="card-info">
     Kode kartu:
     <strong id="cardCodeText">-</strong>
   </div>
-
 
   <p id="status">
     Masukkan PIN untuk mengelola kartu.
   </p>
 
 
-  <!-- LOGIN PIN -->
+  <!-- LOGIN -->
   <div id="loginArea">
 
     <label>PIN Kartu</label>
@@ -167,38 +187,99 @@
   </div>
 
 
-  <!-- PENGATURAN -->
+  <!-- AREA PENGATURAN -->
   <div id="editArea">
 
-    <label>Nama Bisnis</label>
+    <div class="section">
 
-    <input
-      type="text"
-      id="businessName"
-      placeholder="Nama bisnis"
-    >
+      <h2>Informasi Bisnis</h2>
 
+      <p class="section-description">
+        Ubah nama bisnis atau tujuan Google Review.
+      </p>
 
-    <label>Link Google Review</label>
+      <label>Nama Bisnis</label>
 
-    <input
-      type="url"
-      id="reviewUrl"
-      placeholder="https://search.google.com/local/writereview?placeid=..."
-    >
-
-
-    <button id="saveBtn">
-      SIMPAN PERUBAHAN
-    </button>
+      <input
+        type="text"
+        id="businessName"
+        placeholder="Nama bisnis"
+      >
 
 
-    <button
-      id="testBtn"
-      class="secondary"
-    >
-      TEST LINK GOOGLE REVIEW
-    </button>
+      <label>Link Google Review</label>
+
+      <input
+        type="url"
+        id="reviewUrl"
+        placeholder="https://search.google.com/local/writereview?placeid=..."
+      >
+
+
+      <button id="saveBtn">
+        SIMPAN PERUBAHAN
+      </button>
+
+
+      <button
+        id="testBtn"
+        class="secondary"
+      >
+        TEST LINK GOOGLE REVIEW
+      </button>
+
+    </div>
+
+
+    <!-- GANTI PIN -->
+
+    <div class="section">
+
+      <h2>Keamanan</h2>
+
+      <p class="section-description">
+        Ganti PIN kartu jika diperlukan.
+      </p>
+
+      <button
+        id="showChangePinBtn"
+        class="secondary"
+      >
+        GANTI PIN
+      </button>
+
+
+      <div id="changePinArea">
+
+        <label>PIN Baru</label>
+
+        <input
+          type="password"
+          id="newPin"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="PIN baru 6 digit"
+        >
+
+
+        <label>Konfirmasi PIN Baru</label>
+
+        <input
+          type="password"
+          id="confirmNewPin"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="Ulangi PIN baru"
+        >
+
+
+        <button id="changePinBtn">
+          SIMPAN PIN BARU
+        </button>
+
+      </div>
+
+    </div>
 
 
     <button
@@ -262,6 +343,21 @@ const testBtn =
 const logoutBtn =
   document.getElementById("logoutBtn");
 
+const showChangePinBtn =
+  document.getElementById("showChangePinBtn");
+
+const changePinArea =
+  document.getElementById("changePinArea");
+
+const newPin =
+  document.getElementById("newPin");
+
+const confirmNewPin =
+  document.getElementById("confirmNewPin");
+
+const changePinBtn =
+  document.getElementById("changePinBtn");
+
 
 let currentPin = "";
 
@@ -283,21 +379,19 @@ if (!cardCode) {
     "error"
   );
 
-  loginArea.style.display =
-    "none";
+  loginArea.style.display = "none";
 
 } else {
 
-  cardCodeText.textContent =
-    cardCode;
+  cardCodeText.textContent = cardCode;
 
 }
 
 
 
-// ==============================
+// ===================================
 // VERIFIKASI PIN
-// ==============================
+// ===================================
 
 async function verifikasiPin() {
 
@@ -392,8 +486,6 @@ async function verifikasiPin() {
     }
 
 
-    // PIN benar
-
     currentPin = pin;
 
     pinInput.value = "";
@@ -418,11 +510,9 @@ async function verifikasiPin() {
 }
 
 
-
 function resetVerifyButton() {
 
-  verifyBtn.disabled =
-    false;
+  verifyBtn.disabled = false;
 
   verifyBtn.textContent =
     "BUKA PENGATURAN";
@@ -431,9 +521,9 @@ function resetVerifyButton() {
 
 
 
-// ==============================
+// ===================================
 // AMBIL DATA KARTU
-// ==============================
+// ===================================
 
 async function ambilDataKartu() {
 
@@ -449,8 +539,10 @@ async function ambilDataKartu() {
         {
 
           headers: {
+
             "apikey":
               SUPABASE_KEY
+
           }
 
         }
@@ -462,8 +554,6 @@ async function ambilDataKartu() {
 
 
     if (!response.ok) {
-
-      console.error(data);
 
       pesan(
         "Gagal mengambil data kartu.",
@@ -540,7 +630,7 @@ async function ambilDataKartu() {
     console.error(error);
 
     pesan(
-      "Terjadi kesalahan saat mengambil data.",
+      "Gagal mengambil data kartu.",
       "error"
     );
 
@@ -552,9 +642,9 @@ async function ambilDataKartu() {
 
 
 
-// ==============================
-// SIMPAN PERUBAHAN
-// ==============================
+// ===================================
+// SIMPAN DATA BISNIS
+// ===================================
 
 async function simpanPerubahan() {
 
@@ -590,8 +680,7 @@ async function simpanPerubahan() {
   }
 
 
-  saveBtn.disabled =
-    true;
+  saveBtn.disabled = true;
 
   saveBtn.textContent =
     "MENYIMPAN...";
@@ -605,9 +694,7 @@ async function simpanPerubahan() {
 
     const response =
       await fetch(
-
         `${SUPABASE_URL}/rest/v1/rpc/update_card_settings`,
-
         {
 
           method: "POST",
@@ -648,8 +735,6 @@ async function simpanPerubahan() {
 
     if (!response.ok) {
 
-      console.error(result);
-
       pesan(
         "Gagal menyimpan perubahan.",
         "error"
@@ -664,7 +749,7 @@ async function simpanPerubahan() {
     if (result !== true) {
 
       pesan(
-        "PIN tidak valid atau perubahan ditolak.",
+        "Perubahan ditolak.",
         "error"
       );
 
@@ -699,11 +784,9 @@ async function simpanPerubahan() {
 }
 
 
-
 function resetSaveButton() {
 
-  saveBtn.disabled =
-    false;
+  saveBtn.disabled = false;
 
   saveBtn.textContent =
     "SIMPAN PERUBAHAN";
@@ -712,9 +795,179 @@ function resetSaveButton() {
 
 
 
-// ==============================
-// TEST LINK REVIEW
-// ==============================
+// ===================================
+// GANTI PIN
+// ===================================
+
+async function gantiPin() {
+
+  const pinBaru =
+    newPin.value.trim();
+
+  const konfirmasi =
+    confirmNewPin.value.trim();
+
+
+  if (!/^\d{6}$/.test(pinBaru)) {
+
+    pesan(
+      "PIN baru harus 6 digit angka.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (pinBaru !== konfirmasi) {
+
+    pesan(
+      "Konfirmasi PIN baru tidak sama.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (pinBaru === currentPin) {
+
+    pesan(
+      "PIN baru harus berbeda dari PIN lama.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  changePinBtn.disabled = true;
+
+  changePinBtn.textContent =
+    "MENGGANTI PIN...";
+
+  pesan(
+    "Sedang mengganti PIN..."
+  );
+
+
+  try {
+
+    const response =
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/change_card_pin`,
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "apikey":
+              SUPABASE_KEY,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body: JSON.stringify({
+
+            p_card_code:
+              cardCode,
+
+            p_old_pin:
+              currentPin,
+
+            p_new_pin:
+              pinBaru
+
+          })
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      pesan(
+        "Gagal mengganti PIN.",
+        "error"
+      );
+
+      resetChangePinButton();
+
+      return;
+    }
+
+
+    if (result !== true) {
+
+      pesan(
+        "PIN lama tidak valid atau perubahan ditolak.",
+        "error"
+      );
+
+      resetChangePinButton();
+
+      return;
+    }
+
+
+    // PIN BARU JADI PIN AKTIF
+    currentPin = pinBaru;
+
+
+    newPin.value = "";
+    confirmNewPin.value = "";
+
+
+    changePinArea.style.display =
+      "none";
+
+
+    pesan(
+      "PIN berhasil diganti!",
+      "success"
+    );
+
+
+    resetChangePinButton();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    pesan(
+      "Terjadi kesalahan saat mengganti PIN.",
+      "error"
+    );
+
+    resetChangePinButton();
+
+  }
+
+}
+
+
+function resetChangePinButton() {
+
+  changePinBtn.disabled = false;
+
+  changePinBtn.textContent =
+    "SIMPAN PIN BARU";
+
+}
+
+
+
+// ===================================
+// TEST GOOGLE REVIEW
+// ===================================
 
 function testLink() {
 
@@ -746,9 +999,9 @@ function testLink() {
 
 
 
-// ==============================
+// ===================================
 // KUNCI PENGATURAN
-// ==============================
+// ===================================
 
 function kunciPengaturan() {
 
@@ -757,6 +1010,12 @@ function kunciPengaturan() {
   businessName.value = "";
   reviewUrl.value = "";
 
+  newPin.value = "";
+  confirmNewPin.value = "";
+
+  changePinArea.style.display =
+    "none";
+
   editArea.style.display =
     "none";
 
@@ -764,16 +1023,16 @@ function kunciPengaturan() {
     "block";
 
   pesan(
-    "Pengaturan dikunci. Masukkan PIN untuk membukanya."
+    "Pengaturan dikunci. Masukkan PIN."
   );
 
 }
 
 
 
-// ==============================
+// ===================================
 // EVENT
-// ==============================
+// ===================================
 
 verifyBtn.addEventListener(
   "click",
@@ -793,6 +1052,34 @@ testBtn.addEventListener(
 );
 
 
+showChangePinBtn.addEventListener(
+  "click",
+  function() {
+
+    if (
+      changePinArea.style.display === "block"
+    ) {
+
+      changePinArea.style.display =
+        "none";
+
+    } else {
+
+      changePinArea.style.display =
+        "block";
+
+    }
+
+  }
+);
+
+
+changePinBtn.addEventListener(
+  "click",
+  gantiPin
+);
+
+
 logoutBtn.addEventListener(
   "click",
   kunciPengaturan
@@ -804,9 +1091,7 @@ pinInput.addEventListener(
   function(event) {
 
     if (event.key === "Enter") {
-
       verifikasiPin();
-
     }
 
   }
