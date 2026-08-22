@@ -17,7 +17,7 @@
       justify-content: center;
       align-items: center;
       background: #050505;
-      color: white;
+      color: #ffffff;
       font-family: Arial, sans-serif;
     }
 
@@ -29,7 +29,8 @@
 
     h1 {
       text-align: center;
-      margin-bottom: 8px;
+      margin: 0 0 8px;
+      font-size: 34px;
     }
 
     .subtitle {
@@ -50,7 +51,7 @@
 
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 16px;
       margin-bottom: 7px;
       color: #bbb;
       font-size: 14px;
@@ -63,12 +64,12 @@
       border: 1px solid #333;
       background: #111;
       color: white;
-      font-size: 15px;
+      font-size: 16px;
       outline: none;
     }
 
     input:focus {
-      border-color: white;
+      border-color: #fff;
     }
 
     button {
@@ -77,19 +78,20 @@
       padding: 15px;
       border: none;
       border-radius: 10px;
-      background: white;
-      color: black;
-      font-weight: bold;
+      background: #fff;
+      color: #000;
       font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
     }
 
     button:disabled {
       opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .success {
-      color: #00ff88 !important;
+      color: #00e887 !important;
     }
 
     .error {
@@ -100,59 +102,61 @@
 
 <body>
 
-<div class="container">
+  <div class="container">
 
-  <h1>NEXA</h1>
+    <h1>NEXA</h1>
 
-  <p class="subtitle">
-    Aktivasi Kartu Google Review
-  </p>
+    <p class="subtitle">
+      Aktivasi Kartu Google Review
+    </p>
 
-  <p id="status">
-    Memeriksa kartu...
-  </p>
+    <p id="status">
+      Memeriksa kartu...
+    </p>
 
-  <div id="formAktivasi">
+    <div id="formAktivasi">
 
-    <label>Nama Bisnis</label>
-    <input
-      type="text"
-      id="businessName"
-      placeholder="Contoh: Yamaha Tumenggung Suryo"
-    >
+      <label>Nama Bisnis</label>
+      <input
+        id="businessName"
+        type="text"
+        placeholder="Contoh: Yamaha SIP Tumenggung Suryo"
+      >
 
-    <label>Link Google Review</label>
-    <input
-      type="url"
-      id="reviewUrl"
-      placeholder="https://search.google.com/local/writereview?placeid=..."
-    >
+      <label>Link Google Review</label>
+      <input
+        id="reviewUrl"
+        type="url"
+        placeholder="https://search.google.com/local/writereview?placeid=..."
+      >
 
-    <label>Buat PIN 6 Digit</label>
-    <input
-      type="password"
-      id="pin"
-      inputmode="numeric"
-      maxlength="6"
-      placeholder="Contoh: 482731"
-    >
+      <label>Buat PIN 6 Digit</label>
+      <input
+        id="pin"
+        type="password"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="new-password"
+        placeholder="••••••"
+      >
 
-    <label>Konfirmasi PIN</label>
-    <input
-      type="password"
-      id="confirmPin"
-      inputmode="numeric"
-      maxlength="6"
-      placeholder="Masukkan PIN sekali lagi"
-    >
+      <label>Konfirmasi PIN</label>
+      <input
+        id="confirmPin"
+        type="password"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="new-password"
+        placeholder="••••••"
+      >
 
-    <button id="activateBtn">
-      AKTIVASI KARTU
-    </button>
+      <button id="activateBtn">
+        AKTIVASI KARTU
+      </button>
+
+    </div>
 
   </div>
-
-</div>
 
 <script>
 
@@ -163,11 +167,8 @@ const SUPABASE_KEY =
   "sb_publishable_BAk8-o_novmk_D73RnX26Q_cju3IBO6";
 
 
-const params =
-  new URLSearchParams(window.location.search);
-
-const cardCode =
-  params.get("card");
+const params = new URLSearchParams(window.location.search);
+const cardCode = params.get("card");
 
 
 const statusElement =
@@ -192,25 +193,31 @@ const activateBtn =
   document.getElementById("activateBtn");
 
 
+function tampilError(pesan) {
+  statusElement.textContent = pesan;
+  statusElement.className = "error";
+}
+
+
+function tampilNormal(pesan) {
+  statusElement.textContent = pesan;
+  statusElement.className = "";
+}
+
+
 async function cekKartu() {
 
   if (!cardCode) {
-
-    statusElement.textContent =
-      "Kode kartu tidak ditemukan.";
-
-    statusElement.className =
-      "error";
-
+    tampilError("Kode kartu tidak ditemukan.");
     return;
   }
-
 
   try {
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/cards?card_code=eq.${encodeURIComponent(cardCode)}&select=*`,
+      `${SUPABASE_URL}/rest/v1/cards?card_code=eq.${encodeURIComponent(cardCode)}&select=card_code,status,target_url`,
       {
+        method: "GET",
         headers: {
           "apikey": SUPABASE_KEY,
           "Authorization": `Bearer ${SUPABASE_KEY}`
@@ -219,282 +226,32 @@ async function cekKartu() {
     );
 
 
-    const data =
-      await response.json();
+    const data = await response.json();
 
 
     if (!response.ok) {
-
-      statusElement.textContent =
-        "Gagal menghubungkan ke database.";
-
-      statusElement.className =
-        "error";
-
-      return;
-    }
-
-
-    if (data.length === 0) {
-
-      statusElement.textContent =
-        "Kartu tidak ditemukan.";
-
-      statusElement.className =
-        "error";
-
-      return;
-    }
-
-
-    const kartu =
-      data[0];
-
-
-    if (
-      kartu.status === "active" &&
-      kartu.target_url
-    ) {
-
-      statusElement.textContent =
-        "Membuka halaman ulasan...";
-
-      window.location.href =
-        kartu.target_url;
-
-      return;
-    }
-
-
-    if (kartu.status === "inactive") {
-
-      statusElement.textContent =
-        "Kartu siap diaktifkan.";
-
-      formAktivasi.style.display =
-        "block";
-
-      return;
-    }
-
-
-    statusElement.textContent =
-      "Status kartu: " + kartu.status;
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    statusElement.textContent =
-      "Terjadi kesalahan koneksi.";
-
-    statusElement.className =
-      "error";
-  }
-}
-
-
-
-async function aktivasiKartu() {
-
-  const nama =
-    businessName.value.trim();
-
-  const link =
-    reviewUrl.value.trim();
-
-  const pinValue =
-    pin.value.trim();
-
-  const confirmPinValue =
-    confirmPin.value.trim();
-
-
-  if (!nama) {
-
-    statusElement.textContent =
-      "Masukkan nama bisnis.";
-
-    statusElement.className =
-      "error";
-
-    return;
-  }
-
-
-  if (!link) {
-
-    statusElement.textContent =
-      "Masukkan link Google Review.";
-
-    statusElement.className =
-      "error";
-
-    return;
-  }
-
-
-  if (!link.startsWith("https://")) {
-
-    statusElement.textContent =
-      "Link Google Review tidak valid.";
-
-    statusElement.className =
-      "error";
-
-    return;
-  }
-
-
-  if (!/^\d{6}$/.test(pinValue)) {
-
-    statusElement.textContent =
-      "PIN harus terdiri dari 6 digit angka.";
-
-    statusElement.className =
-      "error";
-
-    return;
-  }
-
-
-  if (pinValue !== confirmPinValue) {
-
-    statusElement.textContent =
-      "Konfirmasi PIN tidak sama.";
-
-    statusElement.className =
-      "error";
-
-    return;
-  }
-
-
-  activateBtn.disabled =
-    true;
-
-  activateBtn.textContent =
-    "MENGAKTIFKAN...";
-
-  statusElement.textContent =
-    "Sedang mengaktifkan kartu...";
-
-  statusElement.className =
-    "";
-
-
-  try {
-
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/activate_card`,
-      {
-        method: "POST",
-
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          p_card_code: cardCode,
-          p_name: nama,
-          p_target_url: link,
-          p_pin: pinValue
-        })
-      }
-    );
-
-
-    const data =
-      await response.json();
-
-
-    if (!response.ok) {
-
       console.error(data);
-
-      statusElement.textContent =
-        data.message || "Aktivasi gagal.";
-
-      statusElement.className =
-        "error";
-
-      activateBtn.disabled =
-        false;
-
-      activateBtn.textContent =
-        "AKTIVASI KARTU";
-
+      tampilError("Gagal menghubungkan ke database.");
       return;
     }
 
 
-    if (data !== true) {
-
-      statusElement.textContent =
-        "Kartu tidak dapat diaktifkan.";
-
-      statusElement.className =
-        "error";
-
-      activateBtn.disabled =
-        false;
-
-      activateBtn.textContent =
-        "AKTIVASI KARTU";
-
+    if (!Array.isArray(data) || data.length === 0) {
+      tampilError("Kartu tidak ditemukan.");
       return;
     }
 
 
-    statusElement.textContent =
-      "Kartu berhasil diaktifkan!";
+    const kartu = data[0];
 
-    statusElement.className =
-      "success";
-
-    formAktivasi.style.display =
-      "none";
+    const statusKartu =
+      String(kartu.status || "")
+      .trim()
+      .toLowerCase();
 
 
-    setTimeout(() => {
+    // ==========================
+    // KARTU SUDAH AKTIF
+    // ==========================
 
-      window.location.href =
-        link;
-
-    }, 1200);
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    statusElement.textContent =
-      "Terjadi kesalahan saat aktivasi.";
-
-    statusElement.className =
-      "error";
-
-    activateBtn.disabled =
-      false;
-
-    activateBtn.textContent =
-      "AKTIVASI KARTU";
-  }
-}
-
-
-activateBtn.addEventListener(
-  "click",
-  aktivasiKartu
-);
-
-
-cekKartu();
-
-</script>
-
-</body>
-  </html>
+    if (status
