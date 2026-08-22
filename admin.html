@@ -1,264 +1,260 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NEXA Admin</title>
+<title>NEXA Admin</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      background: #070707;
-      color: #fff;
-      font-family: Arial, sans-serif;
-    }
+body {
+  margin: 0;
+  background: #070707;
+  color: white;
+  font-family: Arial, sans-serif;
+}
 
-    .container {
-      width: 92%;
-      max-width: 1100px;
-      margin: auto;
-      padding: 35px 0;
-    }
+.container {
+  width: 92%;
+  max-width: 1150px;
+  margin: auto;
+  padding: 35px 0;
+}
 
-    h1 {
-      margin: 0;
-      font-size: 32px;
-    }
+h1 {
+  margin: 0;
+}
 
-    .subtitle {
-      color: #777;
-      margin-top: 7px;
-    }
+.subtitle {
+  color: #777;
+  margin-top: 7px;
+}
 
-    .box {
-      background: #101010;
-      border: 1px solid #242424;
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 20px;
-    }
+.box {
+  background: #101010;
+  border: 1px solid #242424;
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+}
 
-    label {
-      display: block;
-      color: #aaa;
-      font-size: 14px;
-      margin-bottom: 7px;
-      margin-top: 15px;
-    }
+label {
+  display: block;
+  color: #aaa;
+  margin-top: 15px;
+  margin-bottom: 7px;
+  font-size: 14px;
+}
 
-    input {
-      width: 100%;
-      padding: 14px;
-      background: #151515;
-      color: white;
-      border: 1px solid #333;
-      border-radius: 10px;
-      outline: none;
-      font-size: 15px;
-    }
+input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #151515;
+  color: white;
+  font-size: 15px;
+}
 
-    input:focus {
-      border-color: #fff;
-    }
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 13px 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 12px 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
 
-    .primary {
-      background: #fff;
-      color: #000;
-    }
+.primary {
+  background: white;
+  color: black;
+}
 
-    .secondary {
-      background: #202020;
-      color: #fff;
-      border: 1px solid #333;
-    }
+.secondary {
+  background: #202020;
+  color: white;
+  border: 1px solid #333;
+}
 
-    .danger {
-      background: #261111;
-      color: #ff7777;
-      border: 1px solid #512222;
-    }
+.danger {
+  background: #261111;
+  color: #ff7777;
+  border: 1px solid #512222;
+}
 
-    button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
+.success {
+  color: #00e887 !important;
+}
 
-    #loginPage {
-      max-width: 420px;
-      margin: 70px auto;
-    }
+.error {
+  color: #ff5555 !important;
+}
 
-    #dashboard {
-      display: none;
-    }
+#loginPage {
+  max-width: 420px;
+  margin: 70px auto;
+}
 
-    #loginBtn {
-      width: 100%;
-      margin-top: 20px;
-      padding: 15px;
-    }
+#dashboard {
+  display: none;
+}
 
-    #status {
-      min-height: 22px;
-      margin-top: 15px;
-      color: #aaa;
-    }
+#loginBtn {
+  width: 100%;
+  margin-top: 20px;
+}
 
-    .error {
-      color: #ff5555 !important;
-    }
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
 
-    .success {
-      color: #00e887 !important;
-    }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 15px;
+  margin-top: 25px;
+}
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+.stat {
+  background: #101010;
+  border: 1px solid #242424;
+  border-radius: 14px;
+  padding: 20px;
+}
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-top: 25px;
-    }
+.stat-title {
+  color: #777;
+  font-size: 13px;
+}
 
-    .stat {
-      background: #101010;
-      border: 1px solid #242424;
-      border-radius: 14px;
-      padding: 20px;
-    }
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 8px;
+}
 
-    .stat-title {
-      color: #777;
-      font-size: 13px;
-    }
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
 
-    .stat-value {
-      margin-top: 8px;
-      font-size: 28px;
-      font-weight: bold;
-    }
+.row > div {
+  flex: 1;
+}
 
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      margin-top: 25px;
-      flex-wrap: wrap;
-    }
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+  flex-wrap: wrap;
+}
 
-    .toolbar input {
-      flex: 1;
-      min-width: 220px;
-    }
+.toolbar input {
+  flex: 1;
+  min-width: 220px;
+}
 
-    .create-area {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
+.cards {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
 
-    .create-area input {
-      flex: 1;
-    }
+.card {
+  background: #101010;
+  border: 1px solid #242424;
+  border-radius: 14px;
+  padding: 18px;
+}
 
-    .cards {
-      margin-top: 20px;
-      display: grid;
-      gap: 12px;
-    }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    .card {
-      background: #101010;
-      border: 1px solid #242424;
-      border-radius: 14px;
-      padding: 18px;
-    }
+.card-code {
+  font-size: 18px;
+  font-weight: bold;
+}
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+.badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
 
-    .card-code {
-      font-size: 18px;
-      font-weight: bold;
-    }
+.active {
+  background: #0e2c20;
+  color: #00e887;
+}
 
-    .badge {
-      padding: 6px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-    }
+.inactive {
+  background: #302711;
+  color: #ffc857;
+}
 
-    .active {
-      background: #0e2c20;
-      color: #00e887;
-    }
+.details {
+  color: #888;
+  margin-top: 12px;
+  line-height: 1.7;
+  word-break: break-word;
+}
 
-    .inactive {
-      background: #302711;
-      color: #ffc857;
-    }
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
 
-    .details {
-      margin-top: 13px;
-      color: #888;
-      line-height: 1.7;
-      word-break: break-word;
-    }
+.empty {
+  text-align: center;
+  color: #777;
+  padding: 30px;
+}
 
-    .actions {
-      margin-top: 15px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+#qrHidden {
+  position: fixed;
+  left: -99999px;
+  top: -99999px;
+}
 
-    .empty {
-      color: #777;
-      text-align: center;
-      padding: 35px;
-    }
+@media(max-width:650px) {
 
-    @media (max-width: 650px) {
-      .stats {
-        grid-template-columns: 1fr;
-      }
+  .stats {
+    grid-template-columns: 1fr;
+  }
 
-      .create-area {
-        flex-direction: column;
-      }
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-      .actions button {
-        flex: 1;
-      }
-    }
-  </style>
+  .actions button {
+    flex: 1;
+  }
+
+}
+</style>
 </head>
 
 <body>
@@ -267,36 +263,24 @@
 
 <div id="loginPage" class="container">
 
-  <h1>NEXA</h1>
-  <p class="subtitle">Admin Dashboard</p>
+<h1>NEXA</h1>
+<p class="subtitle">Admin Dashboard</p>
 
-  <div class="box">
+<div class="box">
 
-    <label>Email Admin</label>
-    <input
-      type="email"
-      id="email"
-      placeholder="Email admin"
-    >
+<label>Email Admin</label>
+<input id="email" type="email">
 
-    <label>Password</label>
-    <input
-      type="password"
-      id="password"
-      placeholder="Password admin"
-    >
+<label>Password</label>
+<input id="password" type="password">
 
-    <button
-      id="loginBtn"
-      class="primary"
-    >
-      LOGIN ADMIN
-    </button>
+<button id="loginBtn" class="primary">
+LOGIN ADMIN
+</button>
 
-    <p id="loginStatus"></p>
+<p id="loginStatus"></p>
 
-  </div>
-
+</div>
 </div>
 
 
@@ -304,198 +288,260 @@
 
 <div id="dashboard">
 
-  <div class="container">
+<div class="container">
 
-    <div class="topbar">
+<div class="topbar">
 
-      <div>
-        <h1>NEXA Admin</h1>
-        <p class="subtitle">
-          Manajemen Kartu Google Review
-        </p>
-      </div>
+<div>
+<h1>NEXA Admin</h1>
+<p class="subtitle">
+Manajemen Kartu Google Review
+</p>
+</div>
 
-      <button
-        id="logoutBtn"
-        class="secondary"
-      >
-        LOGOUT
-      </button>
-
-    </div>
-
-
-    <div class="stats">
-
-      <div class="stat">
-        <div class="stat-title">
-          TOTAL KARTU
-        </div>
-        <div
-          class="stat-value"
-          id="totalCards"
-        >
-          0
-        </div>
-      </div>
-
-      <div class="stat">
-        <div class="stat-title">
-          ACTIVE
-        </div>
-        <div
-          class="stat-value"
-          id="activeCards"
-        >
-          0
-        </div>
-      </div>
-
-      <div class="stat">
-        <div class="stat-title">
-          INACTIVE
-        </div>
-        <div
-          class="stat-value"
-          id="inactiveCards"
-        >
-          0
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="box">
-
-      <strong>Tambah Kartu Baru</strong>
-
-      <div class="create-area">
-
-        <input
-          type="text"
-          id="newCardCode"
-          placeholder="Contoh: CARD002"
-        >
-
-        <button
-          id="createBtn"
-          class="primary"
-        >
-          TAMBAH KARTU
-        </button>
-
-      </div>
-
-      <p id="status"></p>
-
-    </div>
-
-
-    <div class="toolbar">
-
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Cari CARD001 atau nama bisnis..."
-      >
-
-      <button
-        id="refreshBtn"
-        class="secondary"
-      >
-        REFRESH
-      </button>
-
-    </div>
-
-
-    <div
-      id="cardsContainer"
-      class="cards"
-    ></div>
-
-  </div>
+<button id="logoutBtn" class="secondary">
+LOGOUT
+</button>
 
 </div>
+
+
+<!-- STATISTIK -->
+
+<div class="stats">
+
+<div class="stat">
+<div class="stat-title">TOTAL KARTU</div>
+<div class="stat-value" id="totalCards">0</div>
+</div>
+
+<div class="stat">
+<div class="stat-title">ACTIVE</div>
+<div class="stat-value" id="activeCards">0</div>
+</div>
+
+<div class="stat">
+<div class="stat-title">INACTIVE</div>
+<div class="stat-value" id="inactiveCards">0</div>
+</div>
+
+</div>
+
+
+<!-- SATU KARTU -->
+
+<div class="box">
+
+<strong>Tambah Satu Kartu</strong>
+
+<div class="row">
+
+<div>
+<label>Kode Kartu</label>
+<input
+id="newCardCode"
+placeholder="Contoh: CARD003"
+>
+</div>
+
+<div>
+<button id="createBtn" class="primary">
+TAMBAH KARTU
+</button>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- BULK -->
+
+<div class="box">
+
+<strong>Buat Banyak Kartu</strong>
+
+<div class="row">
+
+<div>
+
+<label>Nomor Awal</label>
+
+<input
+id="bulkStart"
+type="number"
+min="1"
+placeholder="Contoh: 3"
+>
+
+</div>
+
+<div>
+
+<label>Jumlah Kartu</label>
+
+<input
+id="bulkCount"
+type="number"
+min="1"
+max="500"
+placeholder="Contoh: 50"
+>
+
+</div>
+
+<div>
+
+<button id="bulkBtn" class="primary">
+BUAT BANYAK
+</button>
+
+</div>
+
+</div>
+
+<p style="color:#777;font-size:13px;">
+Contoh: nomor awal 3 + jumlah 50 akan membuat CARD003 sampai CARD052.
+Kode yang sudah ada otomatis dilewati.
+</p>
+
+</div>
+
+
+<!-- QR -->
+
+<div class="box">
+
+<strong>QR Code Produksi</strong>
+
+<p style="color:#777;font-size:13px;">
+Download QR semua kartu yang berstatus INACTIVE.
+ZIP juga berisi manifest.csv.
+</p>
+
+<button id="downloadQrBtn" class="primary">
+DOWNLOAD ZIP QR INACTIVE
+</button>
+
+</div>
+
+
+<p id="status"></p>
+
+
+<!-- SEARCH -->
+
+<div class="toolbar">
+
+<input
+id="searchInput"
+placeholder="Cari kode kartu atau nama bisnis..."
+>
+
+<button id="refreshBtn" class="secondary">
+REFRESH
+</button>
+
+</div>
+
+
+<div id="cardsContainer" class="cards"></div>
+
+</div>
+</div>
+
+
+<div id="qrHidden"></div>
 
 
 <script>
 
 const SUPABASE_URL =
-  "https://ksalsojmvyqwhbcggejy.supabase.co";
+"https://ksalsojmvyqwhbcggejy.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_BAk8-o_novmk_D73RnX26Q_cju3IBO6";
+"sb_publishable_BAk8-o_novmk_D73RnX26Q_cju3IBO6";
 
 
 const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-
-const loginPage =
-  document.getElementById("loginPage");
-
-const dashboard =
-  document.getElementById("dashboard");
-
-const emailInput =
-  document.getElementById("email");
-
-const passwordInput =
-  document.getElementById("password");
-
-const loginBtn =
-  document.getElementById("loginBtn");
-
-const loginStatus =
-  document.getElementById("loginStatus");
-
-const logoutBtn =
-  document.getElementById("logoutBtn");
-
-const totalCards =
-  document.getElementById("totalCards");
-
-const activeCards =
-  document.getElementById("activeCards");
-
-const inactiveCards =
-  document.getElementById("inactiveCards");
-
-const cardsContainer =
-  document.getElementById("cardsContainer");
-
-const searchInput =
-  document.getElementById("searchInput");
-
-const refreshBtn =
-  document.getElementById("refreshBtn");
-
-const newCardCode =
-  document.getElementById("newCardCode");
-
-const createBtn =
-  document.getElementById("createBtn");
-
-const statusEl =
-  document.getElementById("status");
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
 
 let cards = [];
 
 
+const loginPage =
+document.getElementById("loginPage");
 
-function setStatus(text, type = "") {
+const dashboard =
+document.getElementById("dashboard");
 
-  statusEl.textContent =
-    text;
+const emailInput =
+document.getElementById("email");
 
-  statusEl.className =
-    type;
+const passwordInput =
+document.getElementById("password");
+
+const loginBtn =
+document.getElementById("loginBtn");
+
+const loginStatus =
+document.getElementById("loginStatus");
+
+const logoutBtn =
+document.getElementById("logoutBtn");
+
+const statusEl =
+document.getElementById("status");
+
+const cardsContainer =
+document.getElementById("cardsContainer");
+
+const totalCards =
+document.getElementById("totalCards");
+
+const activeCards =
+document.getElementById("activeCards");
+
+const inactiveCards =
+document.getElementById("inactiveCards");
+
+const newCardCode =
+document.getElementById("newCardCode");
+
+const createBtn =
+document.getElementById("createBtn");
+
+const bulkStart =
+document.getElementById("bulkStart");
+
+const bulkCount =
+document.getElementById("bulkCount");
+
+const bulkBtn =
+document.getElementById("bulkBtn");
+
+const searchInput =
+document.getElementById("searchInput");
+
+const refreshBtn =
+document.getElementById("refreshBtn");
+
+const downloadQrBtn =
+document.getElementById("downloadQrBtn");
+
+const qrHidden =
+document.getElementById("qrHidden");
+
+
+
+function setStatus(text,type="") {
+
+statusEl.textContent = text;
+statusEl.className = type;
 
 }
 
@@ -503,11 +549,8 @@ function setStatus(text, type = "") {
 
 function showLogin() {
 
-  loginPage.style.display =
-    "block";
-
-  dashboard.style.display =
-    "none";
+loginPage.style.display = "block";
+dashboard.style.display = "none";
 
 }
 
@@ -515,739 +558,1071 @@ function showLogin() {
 
 function showDashboard() {
 
-  loginPage.style.display =
-    "none";
-
-  dashboard.style.display =
-    "block";
+loginPage.style.display = "none";
+dashboard.style.display = "block";
 
 }
 
 
 
-// ==================================
-// CEK SESSION
-// ==================================
+// =====================
+// SESSION
+// =====================
 
 async function checkSession() {
 
-  const {
-    data: { session }
-  } =
-    await supabaseClient.auth.getSession();
+const {
+data:{session}
+} =
+await supabaseClient.auth.getSession();
 
 
-  if (!session) {
+if(!session) {
 
-    showLogin();
+showLogin();
 
-    return;
-  }
+return;
 
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "is_admin"
-    );
+}
 
 
-  if (
-    error ||
-    data !== true
-  ) {
-
-    await supabaseClient.auth.signOut();
-
-    showLogin();
-
-    return;
-  }
+const {data,error} =
+await supabaseClient.rpc("is_admin");
 
 
-  showDashboard();
+if(error || data !== true) {
 
-  await loadCards();
+await supabaseClient.auth.signOut();
+
+showLogin();
+
+return;
+
+}
+
+
+showDashboard();
+
+await loadCards();
 
 }
 
 
 
-// ==================================
+// =====================
 // LOGIN
-// ==================================
+// =====================
 
 async function login() {
 
-  const email =
-    emailInput.value.trim();
+const email =
+emailInput.value.trim();
 
-  const password =
-    passwordInput.value;
-
-
-  if (!email || !password) {
-
-    loginStatus.textContent =
-      "Isi email dan password.";
-
-    loginStatus.className =
-      "error";
-
-    return;
-  }
+const password =
+passwordInput.value;
 
 
-  loginBtn.disabled =
-    true;
+if(!email || !password) {
 
-  loginBtn.textContent =
-    "LOGIN...";
+loginStatus.textContent =
+"Isi email dan password.";
 
-  loginStatus.textContent =
-    "Memeriksa akun...";
+loginStatus.className =
+"error";
 
-  loginStatus.className =
-    "";
+return;
 
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth.signInWithPassword({
-
-      email: email,
-
-      password: password
-
-    });
+}
 
 
-  if (error) {
-
-    loginStatus.textContent =
-      "Email atau password salah.";
-
-    loginStatus.className =
-      "error";
-
-    loginBtn.disabled =
-      false;
-
-    loginBtn.textContent =
-      "LOGIN ADMIN";
-
-    return;
-  }
+loginBtn.disabled = true;
+loginBtn.textContent = "LOGIN...";
 
 
-  const adminCheck =
-    await supabaseClient.rpc(
-      "is_admin"
-    );
+const {error} =
+await supabaseClient.auth.signInWithPassword({
+email,
+password
+});
 
 
-  if (
-    adminCheck.error ||
-    adminCheck.data !== true
-  ) {
+if(error) {
 
-    await supabaseClient.auth.signOut();
+loginStatus.textContent =
+"Email atau password salah.";
 
-    loginStatus.textContent =
-      "Akun ini bukan admin Nexa.";
+loginStatus.className =
+"error";
 
-    loginStatus.className =
-      "error";
+loginBtn.disabled = false;
+loginBtn.textContent =
+"LOGIN ADMIN";
 
-    loginBtn.disabled =
-      false;
+return;
 
-    loginBtn.textContent =
-      "LOGIN ADMIN";
-
-    return;
-  }
+}
 
 
-  passwordInput.value = "";
-
-  showDashboard();
-
-  loginBtn.disabled =
-    false;
-
-  loginBtn.textContent =
-    "LOGIN ADMIN";
+const admin =
+await supabaseClient.rpc("is_admin");
 
 
-  await loadCards();
+if(
+admin.error ||
+admin.data !== true
+) {
+
+await supabaseClient.auth.signOut();
+
+loginStatus.textContent =
+"Akun bukan admin Nexa.";
+
+loginStatus.className =
+"error";
+
+loginBtn.disabled = false;
+loginBtn.textContent =
+"LOGIN ADMIN";
+
+return;
+
+}
+
+
+passwordInput.value = "";
+
+loginBtn.disabled = false;
+loginBtn.textContent =
+"LOGIN ADMIN";
+
+showDashboard();
+
+await loadCards();
 
 }
 
 
 
-// ==================================
+// =====================
 // LOGOUT
-// ==================================
+// =====================
 
 async function logout() {
 
-  await supabaseClient.auth.signOut();
+await supabaseClient.auth.signOut();
 
-  cards = [];
+cards = [];
 
-  cardsContainer.innerHTML = "";
-
-  showLogin();
+showLogin();
 
 }
 
 
 
-// ==================================
-// LOAD SEMUA KARTU
-// ==================================
+// =====================
+// LOAD KARTU
+// =====================
 
 async function loadCards() {
 
-  setStatus(
-    "Mengambil data kartu..."
-  );
+setStatus(
+"Mengambil data kartu..."
+);
 
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "admin_list_cards"
-    );
+const {data,error} =
+await supabaseClient.rpc(
+"admin_list_cards"
+);
 
 
-  if (error) {
+if(error) {
 
-    console.error(error);
+console.error(error);
 
-    setStatus(
-      "Gagal mengambil data kartu.",
-      "error"
-    );
+setStatus(
+"Gagal mengambil data kartu.",
+"error"
+);
 
-    return;
-  }
+return;
 
-
-  cards =
-    Array.isArray(data)
-    ? data
-    : [];
+}
 
 
-  updateStats();
+cards =
+Array.isArray(data)
+? data
+: [];
 
-  renderCards();
 
-  setStatus(
-    "Data kartu berhasil dimuat.",
-    "success"
-  );
+updateStats();
+
+renderCards();
+
+setStatus(
+"Data kartu berhasil dimuat.",
+"success"
+);
 
 }
 
 
 
-// ==================================
+// =====================
 // STATISTIK
-// ==================================
+// =====================
 
 function updateStats() {
 
-  const active =
-    cards.filter(card =>
-      String(card.status)
-      .trim()
-      .toLowerCase() === "active"
-    ).length;
+const active =
+cards.filter(c =>
+normalizeStatus(c.status) === "active"
+).length;
 
 
-  const inactive =
-    cards.filter(card =>
-      String(card.status)
-      .trim()
-      .toLowerCase() === "inactive"
-    ).length;
+const inactive =
+cards.filter(c =>
+normalizeStatus(c.status) === "inactive"
+).length;
 
 
-  totalCards.textContent =
-    cards.length;
+totalCards.textContent =
+cards.length;
 
-  activeCards.textContent =
-    active;
+activeCards.textContent =
+active;
 
-  inactiveCards.textContent =
-    inactive;
+inactiveCards.textContent =
+inactive;
 
 }
 
 
 
-// ==================================
-// TAMPILKAN KARTU
-// ==================================
+// =====================
+// RENDER
+// =====================
 
 function renderCards() {
 
-  const keyword =
-    searchInput.value
-    .trim()
-    .toLowerCase();
+const keyword =
+searchInput.value
+.trim()
+.toLowerCase();
 
 
-  const filtered =
-    cards.filter(card => {
+const filtered =
+cards.filter(card => {
 
-      const code =
-        String(
-          card.card_code || ""
-        ).toLowerCase();
+const code =
+String(card.card_code || "")
+.toLowerCase();
 
-      const name =
-        String(
-          card.name || ""
-        ).toLowerCase();
+const name =
+String(card.name || "")
+.toLowerCase();
 
+return (
+code.includes(keyword) ||
+name.includes(keyword)
+);
 
-      return (
-        code.includes(keyword) ||
-        name.includes(keyword)
-      );
-
-    });
+});
 
 
-  cardsContainer.innerHTML = "";
+cardsContainer.innerHTML = "";
 
 
-  if (filtered.length === 0) {
+if(filtered.length === 0) {
 
-    cardsContainer.innerHTML =
-      `<div class="empty">
-        Tidak ada kartu.
-      </div>`;
+cardsContainer.innerHTML =
+'<div class="empty">Tidak ada kartu.</div>';
 
-    return;
-  }
+return;
 
-
-  filtered.forEach(card => {
-
-    const status =
-      String(card.status || "")
-      .trim()
-      .toLowerCase();
+}
 
 
-    const element =
-      document.createElement("div");
+filtered.forEach(card => {
+
+const status =
+normalizeStatus(card.status);
 
 
-    element.className =
-      "card";
+const element =
+document.createElement("div");
+
+element.className = "card";
 
 
-    element.innerHTML = `
+element.innerHTML = `
 
-      <div class="card-header">
+<div class="card-header">
 
-        <div class="card-code">
-          ${escapeHTML(card.card_code)}
-        </div>
+<div class="card-code">
+${escapeHTML(card.card_code)}
+</div>
 
-        <span class="badge ${status}">
-          ${status.toUpperCase()}
-        </span>
+<span class="badge ${status}">
+${status.toUpperCase()}
+</span>
 
-      </div>
-
-
-      <div class="details">
-
-        <div>
-          Bisnis:
-          <strong>
-            ${escapeHTML(card.name || "-")}
-          </strong>
-        </div>
-
-        <div>
-          Dibuat:
-          ${formatDate(card.created_at)}
-        </div>
-
-      </div>
+</div>
 
 
-      <div class="actions">
+<div class="details">
 
-        <button
-          class="secondary"
-          onclick="copyActivationLink('${safeJS(card.card_code)}')"
-        >
-          COPY LINK KARTU
-        </button>
+<div>
+Bisnis:
+<strong>
+${escapeHTML(card.name || "-")}
+</strong>
+</div>
 
+<div>
+Dibuat:
+${formatDate(card.created_at)}
+</div>
 
-        <button
-          class="secondary"
-          onclick="openManage('${safeJS(card.card_code)}')"
-        >
-          KELOLA
-        </button>
-
-
-        <button
-          class="danger"
-          onclick="resetCard('${safeJS(card.card_code)}')"
-        >
-          RESET
-        </button>
-
-      </div>
-
-    `;
+</div>
 
 
-    cardsContainer.appendChild(
-      element
-    );
+<div class="actions">
 
-  });
+<button
+class="secondary"
+onclick="copyLink('${safeJS(card.card_code)}')">
+COPY LINK
+</button>
+
+<button
+class="secondary"
+onclick="downloadSingleQR('${safeJS(card.card_code)}')">
+QR
+</button>
+
+<button
+class="secondary"
+onclick="openManage('${safeJS(card.card_code)}')">
+KELOLA
+</button>
+
+<button
+class="danger"
+onclick="resetCard('${safeJS(card.card_code)}')">
+RESET
+</button>
+
+</div>
+
+`;
+
+cardsContainer.appendChild(element);
+
+});
 
 }
 
 
 
-// ==================================
-// BUAT KARTU
-// ==================================
+// =====================
+// BUAT SATU
+// =====================
 
 async function createCard() {
 
-  const code =
-    newCardCode.value
-    .trim()
-    .toUpperCase();
+const code =
+newCardCode.value
+.trim()
+.toUpperCase();
 
 
-  if (!code) {
+if(!code) {
 
-    setStatus(
-      "Masukkan kode kartu.",
-      "error"
-    );
+setStatus(
+"Masukkan kode kartu.",
+"error"
+);
 
-    return;
-  }
+return;
 
-
-  createBtn.disabled =
-    true;
-
-  createBtn.textContent =
-    "MEMBUAT...";
+}
 
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "admin_create_card",
-      {
-        p_card_code: code
-      }
-    );
+createBtn.disabled = true;
 
 
-  createBtn.disabled =
-    false;
-
-  createBtn.textContent =
-    "TAMBAH KARTU";
-
-
-  if (error) {
-
-    console.error(error);
-
-    setStatus(
-      error.message ||
-      "Gagal membuat kartu.",
-      "error"
-    );
-
-    return;
-  }
+const {data,error} =
+await supabaseClient.rpc(
+"admin_create_card",
+{
+p_card_code:code
+}
+);
 
 
-  if (data !== true) {
-
-    setStatus(
-      "Kode kartu sudah digunakan.",
-      "error"
-    );
-
-    return;
-  }
+createBtn.disabled = false;
 
 
-  newCardCode.value = "";
+if(error) {
+
+setStatus(
+error.message,
+"error"
+);
+
+return;
+
+}
 
 
-  setStatus(
-    `${code} berhasil dibuat.`,
-    "success"
-  );
+if(data !== true) {
+
+setStatus(
+"Kode kartu sudah ada.",
+"error"
+);
+
+return;
+
+}
 
 
-  await loadCards();
+newCardCode.value = "";
+
+
+setStatus(
+code + " berhasil dibuat.",
+"success"
+);
+
+
+await loadCards();
 
 }
 
 
 
-// ==================================
-// RESET KARTU
-// ==================================
+// =====================
+// BULK
+// =====================
+
+async function createBulk() {
+
+const start =
+parseInt(bulkStart.value);
+
+const count =
+parseInt(bulkCount.value);
+
+
+if(
+!Number.isInteger(start) ||
+start < 1
+) {
+
+setStatus(
+"Nomor awal tidak valid.",
+"error"
+);
+
+return;
+
+}
+
+
+if(
+!Number.isInteger(count) ||
+count < 1 ||
+count > 500
+) {
+
+setStatus(
+"Jumlah harus 1 sampai 500.",
+"error"
+);
+
+return;
+
+}
+
+
+bulkBtn.disabled = true;
+
+bulkBtn.textContent =
+"MEMBUAT...";
+
+
+const {data,error} =
+await supabaseClient.rpc(
+"admin_create_cards_bulk",
+{
+p_start:start,
+p_count:count
+}
+);
+
+
+bulkBtn.disabled = false;
+
+bulkBtn.textContent =
+"BUAT BANYAK";
+
+
+if(error) {
+
+console.error(error);
+
+setStatus(
+error.message ||
+"Gagal membuat kartu.",
+"error"
+);
+
+return;
+
+}
+
+
+const totalCreated =
+Array.isArray(data)
+? data.length
+: 0;
+
+
+setStatus(
+totalCreated +
+" kartu baru berhasil dibuat.",
+"success"
+);
+
+
+bulkStart.value = "";
+bulkCount.value = "";
+
+
+await loadCards();
+
+}
+
+
+
+// =====================
+// RESET
+// =====================
 
 async function resetCard(code) {
 
-  const yakin =
-    confirm(
-      `Reset ${code}?\n\n` +
-      `Nama bisnis, link Google Review dan PIN akan dihapus.`
-    );
+const yakin =
+confirm(
+`Reset ${code}?\n\nNama bisnis, link Google Review dan PIN akan dihapus.`
+);
 
 
-  if (!yakin) {
-    return;
-  }
+if(!yakin) return;
 
 
-  setStatus(
-    `Mereset ${code}...`
-  );
+const {data,error} =
+await supabaseClient.rpc(
+"admin_reset_card",
+{
+p_card_code:code
+}
+);
 
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "admin_reset_card",
-      {
-        p_card_code: code
-      }
-    );
+if(error) {
+
+setStatus(
+"Reset gagal.",
+"error"
+);
+
+return;
+
+}
 
 
-  if (error) {
+if(data !== true) {
 
-    console.error(error);
+setStatus(
+"Kartu tidak ditemukan.",
+"error"
+);
 
-    setStatus(
-      "Reset kartu gagal.",
-      "error"
-    );
+return;
 
-    return;
-  }
-
-
-  if (data !== true) {
-
-    setStatus(
-      "Kartu tidak ditemukan.",
-      "error"
-    );
-
-    return;
-  }
+}
 
 
-  setStatus(
-    `${code} berhasil direset.`,
-    "success"
-  );
+setStatus(
+code + " berhasil direset.",
+"success"
+);
 
 
-  await loadCards();
+await loadCards();
 
 }
 
 
 
-// ==================================
-// COPY LINK KARTU
-// ==================================
+// =====================
+// URL KARTU
+// =====================
 
-async function copyActivationLink(code) {
+function getCardURL(code) {
 
-  const url =
-    `${window.location.origin}` +
-    `${window.location.pathname.replace("admin.html", "")}` +
-    `?card=${encodeURIComponent(code)}`;
+const base =
+window.location.pathname
+.replace("admin.html","");
 
 
-  try {
-
-    await navigator.clipboard.writeText(
-      url
-    );
-
-    setStatus(
-      `Link ${code} berhasil disalin.`,
-      "success"
-    );
-
-  } catch {
-
-    prompt(
-      "Copy link ini:",
-      url
-    );
-
-  }
+return (
+window.location.origin +
+base +
+"?card=" +
+encodeURIComponent(code)
+);
 
 }
 
 
 
-// ==================================
-// BUKA MANAGE
-// ==================================
+// =====================
+// COPY LINK
+// =====================
+
+async function copyLink(code) {
+
+const url =
+getCardURL(code);
+
+
+try {
+
+await navigator.clipboard.writeText(url);
+
+setStatus(
+"Link " + code +
+" berhasil disalin.",
+"success"
+);
+
+}
+catch {
+
+prompt(
+"Copy link berikut:",
+url
+);
+
+}
+
+}
+
+
+
+// =====================
+// KELOLA
+// =====================
 
 function openManage(code) {
 
-  const base =
-    window.location.pathname
-    .replace(
-      "admin.html",
-      ""
-    );
+const base =
+window.location.pathname
+.replace("admin.html","");
 
 
-  window.open(
-    `${window.location.origin}${base}manage.html?card=${encodeURIComponent(code)}`,
-    "_blank"
-  );
+window.open(
+
+window.location.origin +
+base +
+"manage.html?card=" +
+encodeURIComponent(code),
+
+"_blank"
+
+);
 
 }
 
 
 
-// ==================================
+// =====================
+// GENERATE QR
+// =====================
+
+function generateQRData(code) {
+
+return new Promise(resolve => {
+
+qrHidden.innerHTML = "";
+
+
+new QRCode(qrHidden, {
+
+text:getCardURL(code),
+
+width:1000,
+
+height:1000,
+
+correctLevel:
+QRCode.CorrectLevel.H
+
+});
+
+
+setTimeout(() => {
+
+const canvas =
+qrHidden.querySelector("canvas");
+
+
+if(canvas) {
+
+resolve(
+canvas.toDataURL("image/png")
+);
+
+return;
+
+}
+
+
+const img =
+qrHidden.querySelector("img");
+
+
+resolve(
+img ? img.src : null
+);
+
+},100);
+
+});
+
+}
+
+
+
+// =====================
+// QR SATU KARTU
+// =====================
+
+async function downloadSingleQR(code) {
+
+setStatus(
+"Membuat QR " + code + "..."
+);
+
+
+const dataUrl =
+await generateQRData(code);
+
+
+if(!dataUrl) {
+
+setStatus(
+"Gagal membuat QR.",
+"error"
+);
+
+return;
+
+}
+
+
+const a =
+document.createElement("a");
+
+a.href = dataUrl;
+
+a.download =
+code + ".png";
+
+a.click();
+
+
+setStatus(
+"QR " + code +
+" berhasil dibuat.",
+"success"
+);
+
+}
+
+
+
+// =====================
+// ZIP QR INACTIVE
+// =====================
+
+async function downloadInactiveQR() {
+
+const inactive =
+cards.filter(card =>
+normalizeStatus(card.status) ===
+"inactive"
+);
+
+
+if(inactive.length === 0) {
+
+setStatus(
+"Tidak ada kartu inactive.",
+"error"
+);
+
+return;
+
+}
+
+
+const yakin =
+confirm(
+`Generate ${inactive.length} QR kartu inactive?`
+);
+
+
+if(!yakin) return;
+
+
+downloadQrBtn.disabled = true;
+
+downloadQrBtn.textContent =
+"MEMBUAT ZIP...";
+
+
+try {
+
+const zip =
+new JSZip();
+
+const folder =
+zip.folder("NEXA_QR");
+
+
+let csv =
+"card_code,url\n";
+
+
+for(
+let i = 0;
+i < inactive.length;
+i++
+) {
+
+const code =
+inactive[i].card_code;
+
+const url =
+getCardURL(code);
+
+
+setStatus(
+`Membuat QR ${i+1}/${inactive.length}: ${code}`
+);
+
+
+const dataUrl =
+await generateQRData(code);
+
+
+if(dataUrl) {
+
+const base64 =
+dataUrl.split(",")[1];
+
+
+folder.file(
+code + ".png",
+base64,
+{base64:true}
+);
+
+}
+
+
+csv +=
+`"${code}","${url}"\n`;
+
+}
+
+
+zip.file(
+"manifest.csv",
+csv
+);
+
+
+setStatus(
+"Menyusun file ZIP..."
+);
+
+
+const blob =
+await zip.generateAsync({
+type:"blob"
+});
+
+
+const link =
+document.createElement("a");
+
+link.href =
+URL.createObjectURL(blob);
+
+link.download =
+"NEXA_QR_INACTIVE.zip";
+
+link.click();
+
+
+URL.revokeObjectURL(
+link.href
+);
+
+
+setStatus(
+`${inactive.length} QR berhasil dibuat.`,
+"success"
+);
+
+
+}
+catch(error) {
+
+console.error(error);
+
+setStatus(
+"Gagal membuat ZIP QR.",
+"error"
+);
+
+}
+
+
+downloadQrBtn.disabled = false;
+
+downloadQrBtn.textContent =
+"DOWNLOAD ZIP QR INACTIVE";
+
+}
+
+
+
+// =====================
 // HELPERS
-// ==================================
+// =====================
+
+function normalizeStatus(value) {
+
+return String(value || "")
+.trim()
+.toLowerCase();
+
+}
+
 
 function escapeHTML(value) {
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+return String(value)
+
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
 
 }
 
 
 function safeJS(value) {
 
-  return String(value)
-    .replaceAll("\\", "\\\\")
-    .replaceAll("'", "\\'");
+return String(value)
+
+.replaceAll("\\","\\\\")
+
+.replaceAll("'","\\'");
 
 }
 
 
 function formatDate(value) {
 
-  if (!value) {
-    return "-";
-  }
+if(!value) return "-";
 
 
-  const date =
-    new Date(value);
+const d =
+new Date(value);
 
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+if(Number.isNaN(d.getTime())) {
 
-    return "-";
+return "-";
 
-  }
+}
 
 
-  return date.toLocaleString(
-    "id-ID"
-  );
+return d.toLocaleString(
+"id-ID"
+);
 
 }
 
 
 
-// ==================================
+// =====================
 // EVENTS
-// ==================================
+// =====================
 
 loginBtn.addEventListener(
-  "click",
-  login
+"click",
+login
 );
-
 
 logoutBtn.addEventListener(
-  "click",
-  logout
+"click",
+logout
 );
-
-
-refreshBtn.addEventListener(
-  "click",
-  loadCards
-);
-
 
 createBtn.addEventListener(
-  "click",
-  createCard
+"click",
+createCard
 );
 
+bulkBtn.addEventListener(
+"click",
+createBulk
+);
+
+refreshBtn.addEventListener(
+"click",
+loadCards
+);
+
+downloadQrBtn.addEventListener(
+"click",
+downloadInactiveQR
+);
 
 searchInput.addEventListener(
-  "input",
-  renderCards
+"input",
+renderCards
 );
 
-
 passwordInput.addEventListener(
-  "keydown",
-  event => {
+"keydown",
+e => {
 
-    if (event.key === "Enter") {
-      login();
-    }
+if(e.key === "Enter") {
+login();
+}
 
-  }
+}
 );
 
 
