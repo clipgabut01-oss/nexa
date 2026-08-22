@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Kelola Kartu - NEXA</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #050505;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 430px;
+      padding: 35px 20px;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 34px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-top: 8px;
+      margin-bottom: 30px;
+    }
+
+    .card-info {
+      padding: 12px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #aaa;
+    }
+
+    #status {
+      text-align: center;
+      color: #bbb;
+      margin-bottom: 20px;
+      min-height: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 7px;
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      background: #111;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #181818;
+      color: white;
+      border: 1px solid #333;
+    }
+
+    .danger {
+      background: transparent;
+      color: #aaa;
+      border: 1px solid #333;
+    }
+
+    #editArea {
+      display: none;
+    }
+
+    .success {
+      color: #00e887 !important;
+    }
+
+    .error {
+      color: #ff5555 !important;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>NEXA</h1>
+
+  <p class="subtitle">
+    Kelola Kartu Google Review
+  </p>
+
+
+  <div class="card-info">
+    Kode kartu:
+    <strong id="cardCodeText">-</strong>
+  </div>
+
+
+  <p id="status">
+    Masukkan PIN untuk mengelola kartu.
+  </p>
+
+
+  <!-- LOGIN PIN -->
+  <div id="loginArea">
+
+    <label>PIN Kartu</label>
+
+    <input
+      type="password"
+      id="pinInput"
+      inputmode="numeric"
+      maxlength="6"
+      placeholder="Masukkan PIN 6 digit"
+    >
+
+    <button id="verifyBtn">
+      BUKA PENGATURAN
+    </button>
+
+  </div>
+
+
+  <!-- PENGATURAN -->
+  <div id="editArea">
+
+    <label>Nama Bisnis</label>
+
+    <input
+      type="text"
+      id="businessName"
+      placeholder="Nama bisnis"
+    >
+
+
+    <label>Link Google Review</label>
+
+    <input
+      type="url"
+      id="reviewUrl"
+      placeholder="https://search.google.com/local/writereview?placeid=..."
+    >
+
+
+    <button id="saveBtn">
+      SIMPAN PERUBAHAN
+    </button>
+
+
+    <button
+      id="testBtn"
+      class="secondary"
+    >
+      TEST LINK GOOGLE REVIEW
+    </button>
+
+
+    <button
+      id="logoutBtn"
+      class="danger"
+    >
+      KUNCI PENGATURAN
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://ksalsojmvyqwhbcggejy.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_BAk8-o_novmk_D73RnX26Q_cju3IBO6";
+
+
+const params =
+  new URLSearchParams(window.location.search);
+
+const cardCode =
+  params.get("card");
+
+
+const cardCodeText =
+  document.getElementById("cardCodeText");
+
+const statusEl =
+  document.getElementById("status");
+
+const loginArea =
+  document.getElementById("loginArea");
+
+const editArea =
+  document.getElementById("editArea");
+
+const pinInput =
+  document.getElementById("pinInput");
+
+const verifyBtn =
+  document.getElementById("verifyBtn");
+
+const businessName =
+  document.getElementById("businessName");
+
+const reviewUrl =
+  document.getElementById("reviewUrl");
+
+const saveBtn =
+  document.getElementById("saveBtn");
+
+const testBtn =
+  document.getElementById("testBtn");
+
+const logoutBtn =
+  document.getElementById("logoutBtn");
+
+
+let currentPin = "";
+
+
+function pesan(text, type = "") {
+
+  statusEl.textContent = text;
+  statusEl.className = type;
+
+}
+
+
+if (!cardCode) {
+
+  cardCodeText.textContent = "-";
+
+  pesan(
+    "Kode kartu tidak ditemukan.",
+    "error"
+  );
+
+  loginArea.style.display =
+    "none";
+
+} else {
+
+  cardCodeText.textContent =
+    cardCode;
+
+}
+
+
+
+// ==============================
+// VERIFIKASI PIN
+// ==============================
+
+async function verifikasiPin() {
+
+  const pin =
+    pinInput.value.trim();
+
+
+  if (!/^\d{6}$/.test(pin)) {
+
+    pesan(
+      "PIN harus 6 digit angka.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  verifyBtn.disabled = true;
+
+  verifyBtn.textContent =
+    "MEMERIKSA...";
+
+  pesan(
+    "Memeriksa PIN..."
+  );
+
+
+  try {
+
+    const response =
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/verify_card_pin`,
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "apikey": SUPABASE_KEY,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body: JSON.stringify({
+
+            p_card_code:
+              cardCode,
+
+            p_pin:
+              pin
+
+          })
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      console.error(result);
+
+      pesan(
+        "Gagal memeriksa PIN.",
+        "error"
+      );
+
+      resetVerifyButton();
+
+      return;
+    }
+
+
+    if (result !== true) {
+
+      pesan(
+        "PIN salah.",
+        "error"
+      );
+
+      pinInput.value = "";
+
+      resetVerifyButton();
+
+      return;
+    }
+
+
+    // PIN benar
+
+    currentPin = pin;
+
+    pinInput.value = "";
+
+
+    await ambilDataKartu();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    pesan(
+      "Terjadi kesalahan koneksi.",
+      "error"
+    );
+
+    resetVerifyButton();
+
+  }
+
+}
+
+
+
+function resetVerifyButton() {
+
+  verifyBtn.disabled =
+    false;
+
+  verifyBtn.textContent =
+    "BUKA PENGATURAN";
+
+}
+
+
+
+// ==============================
+// AMBIL DATA KARTU
+// ==============================
+
+async function ambilDataKartu() {
+
+  try {
+
+    const response =
+      await fetch(
+
+        `${SUPABASE_URL}/rest/v1/cards` +
+        `?card_code=eq.${encodeURIComponent(cardCode)}` +
+        `&select=name,target_url,status`,
+
+        {
+
+          headers: {
+            "apikey":
+              SUPABASE_KEY
+          }
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      console.error(data);
+
+      pesan(
+        "Gagal mengambil data kartu.",
+        "error"
+      );
+
+      resetVerifyButton();
+
+      return;
+    }
+
+
+    if (
+      !Array.isArray(data) ||
+      data.length === 0
+    ) {
+
+      pesan(
+        "Kartu tidak ditemukan.",
+        "error"
+      );
+
+      resetVerifyButton();
+
+      return;
+    }
+
+
+    const kartu =
+      data[0];
+
+
+    const statusKartu =
+      String(kartu.status || "")
+      .trim()
+      .toLowerCase();
+
+
+    if (statusKartu !== "active") {
+
+      pesan(
+        "Kartu belum aktif.",
+        "error"
+      );
+
+      resetVerifyButton();
+
+      return;
+    }
+
+
+    businessName.value =
+      kartu.name || "";
+
+    reviewUrl.value =
+      kartu.target_url || "";
+
+
+    loginArea.style.display =
+      "none";
+
+    editArea.style.display =
+      "block";
+
+
+    pesan(
+      "PIN benar. Pengaturan terbuka.",
+      "success"
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    pesan(
+      "Terjadi kesalahan saat mengambil data.",
+      "error"
+    );
+
+    resetVerifyButton();
+
+  }
+
+}
+
+
+
+// ==============================
+// SIMPAN PERUBAHAN
+// ==============================
+
+async function simpanPerubahan() {
+
+  const nama =
+    businessName.value.trim();
+
+  const link =
+    reviewUrl.value.trim();
+
+
+  if (!nama) {
+
+    pesan(
+      "Nama bisnis wajib diisi.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (
+    !link ||
+    !link.startsWith("https://")
+  ) {
+
+    pesan(
+      "Link Google Review tidak valid.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  saveBtn.disabled =
+    true;
+
+  saveBtn.textContent =
+    "MENYIMPAN...";
+
+  pesan(
+    "Menyimpan perubahan..."
+  );
+
+
+  try {
+
+    const response =
+      await fetch(
+
+        `${SUPABASE_URL}/rest/v1/rpc/update_card_settings`,
+
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "apikey":
+              SUPABASE_KEY,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body: JSON.stringify({
+
+            p_card_code:
+              cardCode,
+
+            p_pin:
+              currentPin,
+
+            p_name:
+              nama,
+
+            p_target_url:
+              link
+
+          })
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      console.error(result);
+
+      pesan(
+        "Gagal menyimpan perubahan.",
+        "error"
+      );
+
+      resetSaveButton();
+
+      return;
+    }
+
+
+    if (result !== true) {
+
+      pesan(
+        "PIN tidak valid atau perubahan ditolak.",
+        "error"
+      );
+
+      resetSaveButton();
+
+      return;
+    }
+
+
+    pesan(
+      "Perubahan berhasil disimpan!",
+      "success"
+    );
+
+
+    resetSaveButton();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    pesan(
+      "Terjadi kesalahan saat menyimpan.",
+      "error"
+    );
+
+    resetSaveButton();
+
+  }
+
+}
+
+
+
+function resetSaveButton() {
+
+  saveBtn.disabled =
+    false;
+
+  saveBtn.textContent =
+    "SIMPAN PERUBAHAN";
+
+}
+
+
+
+// ==============================
+// TEST LINK REVIEW
+// ==============================
+
+function testLink() {
+
+  const link =
+    reviewUrl.value.trim();
+
+
+  if (
+    !link ||
+    !link.startsWith("https://")
+  ) {
+
+    pesan(
+      "Link Google Review tidak valid.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  window.open(
+    link,
+    "_blank",
+    "noopener,noreferrer"
+  );
+
+}
+
+
+
+// ==============================
+// KUNCI PENGATURAN
+// ==============================
+
+function kunciPengaturan() {
+
+  currentPin = "";
+
+  businessName.value = "";
+  reviewUrl.value = "";
+
+  editArea.style.display =
+    "none";
+
+  loginArea.style.display =
+    "block";
+
+  pesan(
+    "Pengaturan dikunci. Masukkan PIN untuk membukanya."
+  );
+
+}
+
+
+
+// ==============================
+// EVENT
+// ==============================
+
+verifyBtn.addEventListener(
+  "click",
+  verifikasiPin
+);
+
+
+saveBtn.addEventListener(
+  "click",
+  simpanPerubahan
+);
+
+
+testBtn.addEventListener(
+  "click",
+  testLink
+);
+
+
+logoutBtn.addEventListener(
+  "click",
+  kunciPengaturan
+);
+
+
+pinInput.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      verifikasiPin();
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
