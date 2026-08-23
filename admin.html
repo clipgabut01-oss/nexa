@@ -1289,15 +1289,9 @@ async function resetCard(code){
 
 function getCardURL(code){
 
-  const base=
-  window.location.pathname
-  .replace("admin.html","");
-
-
   return (
-    window.location.origin+
-    base+
-    "?card="+
+    "https://nexa-review-card.vercel.app/" +
+    "?card=" +
     encodeURIComponent(code)
   );
 }
@@ -1330,15 +1324,8 @@ async function copyLink(code){
 
 function openManage(code){
 
-  const base=
-  window.location.pathname
-  .replace("admin.html","");
-
-
   window.open(
-    window.location.origin+
-    base+
-    "manage.html?card="+
+    "https://nexa-review-card.vercel.app/manage.html?card=" +
     encodeURIComponent(code),
     "_blank"
   );
