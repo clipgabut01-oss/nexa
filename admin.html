@@ -1287,37 +1287,74 @@ async function resetCard(code){
 // URL
 // ==========================
 
-function getCardURL(code){
+const activationTokenCache = new Map();
+
+async function getActivationToken(code){
+
+  if(activationTokenCache.has(code)){
+    return activationTokenCache.get(code);
+  }
+
+  const {data,error}=
+  await supabaseClient.rpc(
+    "admin_get_activation_token",
+    {p_card_code:code}
+  );
+
+  if(error || !data){
+    console.error(error);
+    throw new Error("Token aktivasi tidak dapat diambil.");
+  }
+
+  activationTokenCache.set(code,data);
+  return data;
+}
+
+async function getCardURL(code){
+
+  const token=
+  await getActivationToken(code);
 
   return (
     "https://nexa-review-card.vercel.app/" +
     "?card=" +
-    encodeURIComponent(code)
+    encodeURIComponent(code) +
+    "&token=" +
+    encodeURIComponent(token)
   );
 }
 
 
 async function copyLink(code){
 
-  const url=getCardURL(code);
-
-
   try{
 
-    await navigator.clipboard.writeText(url);
+    const url=
+    await getCardURL(code);
+
+    try{
+      await navigator.clipboard.writeText(url);
+
+      setStatus(
+        "Link "+code+" berhasil disalin.",
+        "success"
+      );
+
+    }catch{
+      prompt(
+        "Copy link:",
+        url
+      );
+    }
+
+  }catch(error){
+
+    console.error(error);
 
     setStatus(
-      "Link "+code+" berhasil disalin.",
-      "success"
+      "Gagal mengambil token aktivasi "+code+".",
+      "error"
     );
-
-  }catch{
-
-    prompt(
-      "Copy link:",
-      url
-    );
-
   }
 }
 
@@ -1336,7 +1373,10 @@ function openManage(code){
 // QR BARU + QUIET ZONE
 // ==========================
 
-function generateQRData(code){
+async function generateQRData(code){
+
+  const url=
+  await getCardURL(code);
 
   return new Promise(resolve=>{
 
@@ -1352,7 +1392,7 @@ function generateQRData(code){
     */
 
     new QRCode(qrHidden,{
-      text:getCardURL(code),
+      text:url,
       width:QR_SIZE,
       height:QR_SIZE,
       correctLevel:
@@ -1449,8 +1489,21 @@ async function downloadSingleQR(code){
   );
 
 
-  const dataUrl=
-  await generateQRData(code);
+  let dataUrl;
+
+  try{
+    dataUrl=
+    await generateQRData(code);
+  }catch(error){
+    console.error(error);
+
+    setStatus(
+      "Gagal mengambil token aktivasi "+code+".",
+      "error"
+    );
+
+    return;
+  }
 
 
   if(!dataUrl){
@@ -1550,7 +1603,7 @@ async function downloadInactiveQR(){
       inactive[i].card_code;
 
       const url=
-      getCardURL(code);
+      await getCardURL(code);
 
 
       setStatus(
