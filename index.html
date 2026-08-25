@@ -1,170 +1,181 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexa - Aktivasi Kartu</title>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #050505;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
-
-    .box {
-      width: 90%;
-      max-width: 420px;
-      padding: 30px 20px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #888;
-      margin-bottom: 25px;
-    }
-
-    #status {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #ccc;
-    }
-
-    #formAktivasi {
-      display: none;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      margin-bottom: 6px;
-      color: #aaa;
-      font-size: 14px;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 10px;
-      color: white;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      margin-top: 25px;
-      padding: 15px;
-      border: none;
-      border-radius: 10px;
-      background: white;
-      color: black;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    button:disabled {
-      opacity: .5;
-    }
-
-    .error {
-      color: #ff5555 !important;
-    }
-
-    .success {
-      color: #00e887 !important;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aktivasi Kartu NEXA</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#050505;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+.container{
+  width:90%;
+  max-width:430px;
+  padding:35px 20px;
+}
+h1{
+  text-align:center;
+  margin:0;
+  font-size:34px;
+}
+.subtitle{
+  text-align:center;
+  color:#888;
+  margin:8px 0 25px;
+}
+.card-info{
+  background:#111;
+  border:1px solid #222;
+  border-radius:12px;
+  padding:13px;
+  text-align:center;
+  color:#aaa;
+  margin-bottom:20px;
+}
+#status{
+  text-align:center;
+  color:#bbb;
+  min-height:22px;
+  margin-bottom:20px;
+  line-height:1.5;
+}
+.form{
+  display:none;
+}
+label{
+  display:block;
+  margin:15px 0 7px;
+  color:#bbb;
+  font-size:14px;
+}
+input{
+  width:100%;
+  padding:14px;
+  border:1px solid #333;
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  font-size:16px;
+  outline:none;
+}
+input:focus{border-color:#fff}
+button{
+  width:100%;
+  padding:15px;
+  margin-top:20px;
+  border:0;
+  border-radius:10px;
+  background:#fff;
+  color:#000;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+.success{color:#00e887!important}
+.error{color:#ff5555!important}
+.note{
+  margin-top:15px;
+  color:#666;
+  font-size:12px;
+  line-height:1.5;
+  text-align:center;
+}
+</style>
 </head>
-
 <body>
 
-<div class="box">
-
+<div class="container">
   <h1>NEXA</h1>
+  <p class="subtitle">Aktivasi Kartu Google Review</p>
 
-  <p class="subtitle">
-    Aktivasi Kartu Google Review
-  </p>
+  <div class="card-info">
+    Kode kartu:
+    <strong id="cardCodeText">-</strong>
+  </div>
 
-  <p id="status">
-    Memeriksa kartu...
-  </p>
+  <p id="status">Memeriksa kartu...</p>
 
-  <div id="formAktivasi">
-
+  <div id="activationForm" class="form">
     <label>Nama Bisnis</label>
     <input
       id="businessName"
       type="text"
-      placeholder="Nama bisnis"
+      placeholder="Contoh: Kopi NEXA"
+      autocomplete="organization"
     >
 
     <label>Link Google Review</label>
     <input
       id="reviewUrl"
       type="url"
-      placeholder="https://search.google.com/local/writereview?placeid=..."
+      placeholder="https://..."
+      autocomplete="url"
     >
 
     <label>Buat PIN 6 Digit</label>
     <input
-      id="pin"
+      id="pinInput"
       type="password"
       inputmode="numeric"
       maxlength="6"
-      placeholder="••••••"
+      placeholder="Contoh: 123456"
+      autocomplete="new-password"
     >
 
     <label>Konfirmasi PIN</label>
     <input
-      id="confirmPin"
+      id="confirmPinInput"
       type="password"
       inputmode="numeric"
       maxlength="6"
-      placeholder="••••••"
+      placeholder="Ulangi PIN"
+      autocomplete="new-password"
     >
 
-    <button id="activateBtn">
-      AKTIVASI KARTU
-    </button>
+    <button id="activateBtn">AKTIFKAN KARTU</button>
 
+    <p class="note">
+      Simpan PIN ini. PIN digunakan untuk mengubah pengaturan kartu setelah kartu aktif.
+    </p>
   </div>
-
 </div>
 
-
 <script>
-
 const SUPABASE_URL =
   "https://ksalsojmvyqwhbcggejy.supabase.co";
 
 const SUPABASE_KEY =
   "sb_publishable_BAk8-o_novmk_D73RnX26Q_cju3IBO6";
 
+const params =
+  new URLSearchParams(window.location.search);
 
 const cardCode =
-  new URLSearchParams(window.location.search).get("card");
+  (params.get("card") || "").trim();
 
+const activationToken =
+  (params.get("token") || "").trim();
+
+const cardCodeText =
+  document.getElementById("cardCodeText");
 
 const statusEl =
   document.getElementById("status");
 
-const formEl =
-  document.getElementById("formAktivasi");
+const activationForm =
+  document.getElementById("activationForm");
 
 const businessName =
   document.getElementById("businessName");
@@ -172,332 +183,298 @@ const businessName =
 const reviewUrl =
   document.getElementById("reviewUrl");
 
-const pin =
-  document.getElementById("pin");
+const pinInput =
+  document.getElementById("pinInput");
 
-const confirmPin =
-  document.getElementById("confirmPin");
+const confirmPinInput =
+  document.getElementById("confirmPinInput");
 
 const activateBtn =
   document.getElementById("activateBtn");
 
 
-function pesan(text, type = "") {
+function setStatus(text, type = "") {
   statusEl.textContent = text;
   statusEl.className = type;
 }
 
 
-async function cekKartu() {
+function validUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
 
+
+async function checkCard() {
   if (!cardCode) {
-    pesan("Kode kartu tidak ditemukan.", "error");
+    cardCodeText.textContent = "-";
+    setStatus(
+      "Kode kartu tidak ditemukan.",
+      "error"
+    );
     return;
   }
 
+  cardCodeText.textContent = cardCode;
 
-  const controller =
-    new AbortController();
-
-  const timeout =
-    setTimeout(() => controller.abort(), 10000);
-
+  if (!activationToken || !validUuid(activationToken)) {
+    setStatus(
+      "Link aktivasi tidak valid. Gunakan QR atau NFC asli kartu NEXA.",
+      "error"
+    );
+    return;
+  }
 
   try {
-
-    pesan("Menghubungkan ke Supabase...");
-
-
-    const url =
-      `${SUPABASE_URL}/rest/v1/cards` +
-      `?card_code=eq.${encodeURIComponent(cardCode)}` +
-      `&select=card_code,status,target_url`;
-
-
     const response =
-      await fetch(url, {
-
-        method: "GET",
-
-        headers: {
-          "apikey": SUPABASE_KEY
-        },
-
-        signal: controller.signal
-      });
-
-
-    clearTimeout(timeout);
-
-
-    if (!response.ok) {
-
-      const errorText =
-        await response.text();
-
-      console.error(errorText);
-
-      pesan(
-        "Supabase error: " + response.status,
-        "error"
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/cards` +
+        `?card_code=eq.${encodeURIComponent(cardCode)}` +
+        `&select=card_code,status,target_url`,
+        {
+          headers: {
+            "apikey": SUPABASE_KEY
+          }
+        }
       );
-
-      return;
-    }
-
 
     const data =
       await response.json();
 
+    if (!response.ok) {
+      setStatus(
+        "Gagal memeriksa kartu.",
+        "error"
+      );
+      return;
+    }
 
-    if (!Array.isArray(data) || data.length === 0) {
-
-      pesan(
+    if (
+      !Array.isArray(data) ||
+      data.length === 0
+    ) {
+      setStatus(
         "Kartu tidak ditemukan.",
         "error"
       );
-
       return;
     }
 
-
-    const kartu =
+    const card =
       data[0];
 
-
-    const statusKartu =
-      String(kartu.status || "")
+    const status =
+      String(card.status || "")
       .trim()
       .toLowerCase();
 
-
-    if (statusKartu === "active") {
-
-      if (!kartu.target_url) {
-
-        pesan(
-          "Kartu aktif tetapi link review kosong.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      pesan(
-        "Membuka Google Review..."
+    if (
+      status === "active" &&
+      card.target_url
+    ) {
+      setStatus(
+        "Kartu aktif. Mengarahkan ke Google Review...",
+        "success"
       );
-
 
       window.location.replace(
-        kartu.target_url
+        card.target_url
       );
 
       return;
     }
 
-
-    if (statusKartu === "inactive") {
-
-      pesan(
-        "Kartu siap diaktifkan."
-      );
-
-      formEl.style.display =
-        "block";
-
-      return;
-    }
-
-
-    pesan(
-      "Status tidak dikenali: " + kartu.status,
-      "error"
-    );
-
-
-  } catch (error) {
-
-    clearTimeout(timeout);
-
-    console.error(error);
-
-
-    if (error.name === "AbortError") {
-
-      pesan(
-        "Supabase tidak merespons. Coba muat ulang.",
+    if (status !== "inactive") {
+      setStatus(
+        "Status kartu tidak valid.",
         "error"
       );
-
       return;
     }
 
+    setStatus(
+      "Kartu ditemukan. Lengkapi aktivasi.",
+      "success"
+    );
 
-    pesan(
-      "Gagal terhubung ke Supabase.",
+    activationForm.style.display =
+      "block";
+
+  } catch (error) {
+    console.error(error);
+
+    setStatus(
+      "Terjadi kesalahan koneksi.",
       "error"
     );
   }
 }
 
 
-
-async function aktivasiKartu() {
-
-  const nama =
+async function activateCard() {
+  const name =
     businessName.value.trim();
 
-  const link =
+  const url =
     reviewUrl.value.trim();
 
-  const pinValue =
-    pin.value.trim();
+  const pin =
+    pinInput.value.trim();
 
-  const pinUlang =
-    confirmPin.value.trim();
+  const confirmPin =
+    confirmPinInput.value.trim();
 
-
-  if (!nama) {
-    pesan("Nama bisnis wajib diisi.", "error");
+  if (!name) {
+    setStatus(
+      "Nama bisnis wajib diisi.",
+      "error"
+    );
     return;
   }
 
-
-  if (!link.startsWith("https://")) {
-    pesan("Link Google Review tidak valid.", "error");
+  if (
+    !url ||
+    !url.startsWith("https://")
+  ) {
+    setStatus(
+      "Link Google Review tidak valid.",
+      "error"
+    );
     return;
   }
 
-
-  if (!/^\d{6}$/.test(pinValue)) {
-    pesan("PIN harus 6 digit angka.", "error");
+  if (!/^\d{6}$/.test(pin)) {
+    setStatus(
+      "PIN harus 6 digit angka.",
+      "error"
+    );
     return;
   }
 
-
-  if (pinValue !== pinUlang) {
-    pesan("Konfirmasi PIN tidak sama.", "error");
+  if (pin !== confirmPin) {
+    setStatus(
+      "Konfirmasi PIN tidak sama.",
+      "error"
+    );
     return;
   }
 
+  if (
+    !activationToken ||
+    !validUuid(activationToken)
+  ) {
+    setStatus(
+      "Token aktivasi tidak valid.",
+      "error"
+    );
+    return;
+  }
 
   activateBtn.disabled = true;
-
   activateBtn.textContent =
     "MENGAKTIFKAN...";
 
-  pesan(
-    "Sedang mengaktifkan kartu..."
+  setStatus(
+    "Mengaktifkan kartu..."
   );
 
-
   try {
-
     const response =
       await fetch(
         `${SUPABASE_URL}/rest/v1/rpc/activate_card`,
         {
-
           method: "POST",
-
           headers: {
             "apikey": SUPABASE_KEY,
-            "Content-Type": "application/json"
+            "Content-Type":
+              "application/json"
           },
-
           body: JSON.stringify({
-
-            p_card_code: cardCode,
-            p_name: nama,
-            p_target_url: link,
-            p_pin: pinValue
-
+            p_card_code:
+              cardCode,
+            p_name:
+              name,
+            p_target_url:
+              url,
+            p_pin:
+              pin,
+            p_activation_token:
+              activationToken
           })
         }
       );
 
-
-    const data =
+    const result =
       await response.json();
 
-
     if (!response.ok) {
+      console.error(result);
 
-      console.error(data);
-
-      pesan(
-        data.message || "Aktivasi gagal.",
+      setStatus(
+        "Aktivasi gagal.",
         "error"
       );
 
-      activateBtn.disabled = false;
-
-      activateBtn.textContent =
-        "AKTIVASI KARTU";
-
+      resetButton();
       return;
     }
 
-
-    if (data !== true) {
-
-      pesan(
-        "Kartu tidak dapat diaktifkan.",
+    if (result !== true) {
+      setStatus(
+        "Aktivasi ditolak. Token salah, kartu sudah aktif, atau data tidak valid.",
         "error"
       );
 
-      activateBtn.disabled = false;
-
-      activateBtn.textContent =
-        "AKTIVASI KARTU";
-
+      resetButton();
       return;
     }
 
+    activationForm.style.display =
+      "none";
 
-    pesan(
-      "Kartu berhasil diaktifkan!",
+    setStatus(
+      "Kartu berhasil diaktifkan. Mengarahkan ke Google Review...",
       "success"
     );
 
-
-    formEl.style.display =
-      "none";
-
-
     setTimeout(() => {
-
-      window.location.replace(link);
-
-    }, 1200);
-
+      window.location.replace(url);
+    }, 900);
 
   } catch (error) {
-
     console.error(error);
 
-    pesan(
-      "Gagal mengaktifkan kartu.",
+    setStatus(
+      "Terjadi kesalahan saat aktivasi.",
       "error"
     );
 
-    activateBtn.disabled = false;
-
-    activateBtn.textContent =
-      "AKTIVASI KARTU";
+    resetButton();
   }
+}
+
+
+function resetButton() {
+  activateBtn.disabled = false;
+  activateBtn.textContent =
+    "AKTIFKAN KARTU";
 }
 
 
 activateBtn.addEventListener(
   "click",
-  aktivasiKartu
+  activateCard
 );
 
+confirmPinInput.addEventListener(
+  "keydown",
+  event => {
+    if (event.key === "Enter") {
+      activateCard();
+    }
+  }
+);
 
-cekKartu();
-
+checkCard();
 </script>
 
 </body>
