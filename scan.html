@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>Scan Kartu — NEXA</title>
+  <style>
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#101d3d 0,#070a12 42%,#050505 78%);color:#f7f8ff;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:22px}
+    .wrap{width:100%;max-width:440px}
+    .brand{text-align:center;font-weight:800;font-size:34px;letter-spacing:5px;background:linear-gradient(90deg,#55d7ff,#8a7dff,#ec78ff);background-clip:text;-webkit-background-clip:text;color:transparent}
+    h1{text-align:center;font-size:23px;margin:8px 0}
+    .sub{text-align:center;color:#9ba5bd;font-size:14px;line-height:1.6;margin:0 0 24px}
+    .panel{background:#0b1020;border:1px solid #26304b;border-radius:20px;padding:18px;box-shadow:0 18px 60px #0008}
+    .camera{background:#03050a;border:1px solid #283451;border-radius:14px;overflow:hidden;aspect-ratio:1/1;position:relative;display:flex;align-items:center;justify-content:center}
+    video{width:100%;height:100%;object-fit:cover;display:none}
+    canvas{display:none}
+    .placeholder{text-align:center;padding:24px;color:#9ba5bd;line-height:1.6}
+    .frame{position:absolute;width:62%;height:62%;border:2px solid #73dfff;border-radius:18px;box-shadow:0 0 0 999px #0002;pointer-events:none;display:none}
+    .frame:before,.frame:after{content:"";position:absolute;background:#b18cff;border-radius:4px}
+    .frame:before{width:24px;height:4px;top:-2px;left:12px}.frame:after{width:4px;height:24px;top:12px;right:-2px}
+    button{width:100%;border:0;border-radius:12px;padding:15px 14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;background:linear-gradient(100deg,#56d8ff,#a18aff);color:#060914}
+    button.secondary{background:#151d30;color:#e7edff;border:1px solid #303b58}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    #status{min-height:42px;text-align:center;font-size:13px;line-height:1.5;color:#b8c3db;margin:14px 0 0}
+    .foot{text-align:center;color:#65708a;font-size:12px;line-height:1.6;margin-top:18px}
+    a{color:#8bdfff}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand">NEXA</div>
+    <h1>Kelola Kartu Review</h1>
+    <p class="sub">Arahkan kamera ke QR pada kartu NEXA untuk membuka pengaturan kartu dengan aman.</p>
+    <section class="panel">
+      <div class="camera">
+        <div class="placeholder" id="placeholder">Kamera belum dinyalakan.<br>Tekan tombol di bawah, lalu izinkan akses kamera.</div>
+        <video id="video" playsinline muted></video>
+        <canvas id="canvas"></canvas>
+        <div class="frame" id="frame"></div>
+      </div>
+      <button id="startBtn">BUKA KAMERA & SCAN QR</button>
+      <button id="manualBtn" class="secondary">MASUKKAN KODE KARTU MANUAL</button>
+      <p id="status" role="status" aria-live="polite">PIN kartu tetap diperlukan setelah QR terbaca.</p>
+    </section>
+    <p class="foot">Gunakan halaman ini melalui HTTPS dan izinkan kamera browser.<br>QR hanya mengenali kartu; PIN tetap menjadi lapisan keamanan.</p>
+  </main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+(() => {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const placeholder = document.getElementById('placeholder');
+  const frame = document.getElementById('frame');
+  const startBtn = document.getElementById('startBtn');
+  const manualBtn = document.getElementById('manualBtn');
+  const status = document.getElementById('status');
+  let stream = null;
+  let scanning = false;
+  let raf = 0;
+
+  function message(text, error = false) {
+    status.textContent = text;
+    status.style.color = error ? '#ff8585' : '#b8c3db';
+  }
+
+  function stopCamera() {
+    scanning = false;
+    cancelAnimationFrame(raf);
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    stream = null;
+    video.srcObject = null;
+    video.style.display = 'none';
+    frame.style.display = 'none';
+    placeholder.style.display = 'block';
+    startBtn.disabled = false;
+    startBtn.textContent = 'BUKA KAMERA & SCAN QR';
+  }
+
+  function cardFromQr(raw) {
+    const value = String(raw || '').trim();
+    if (/^CARD[A-Z0-9_-]{0,28}$/i.test(value)) return value.toUpperCase();
+    try {
+      const parsed = new URL(value);
+      const fromQuery = parsed.searchParams.get('card');
+      if (fromQuery && /^[A-Z0-9_-]{3,32}$/i.test(fromQuery)) return fromQuery.toUpperCase();
+    } catch (_) {}
+    const match = value.match(/(?:^|[/?&=])((?:CARD)[A-Z0-9_-]{0,28})(?:$|[/?&#])/i);
+    return match ? match[1].toUpperCase() : null;
+  }
+
+  function found(raw) {
+    const code = cardFromQr(raw);
+    if (!code) {
+      message('QR terbaca, tetapi kode kartu NEXA tidak ditemukan. Pastikan QR berasal dari kartu NEXA.', true);
+      return false;
+    }
+    stopCamera();
+    message('Kode ' + code + ' terbaca. Membuka verifikasi PIN…');
+    window.location.href = 'manage.html?card=' + encodeURIComponent(code);
+    return true;
+  }
+
+  function tick() {
+    if (!scanning || video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      if (scanning) raf = requestAnimationFrame(tick);
+      return;
+    }
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const result = window.jsQR ? jsQR(image.data, image.width, image.height, { inversionAttempts: 'attemptBoth' }) : null;
+    if (result && found(result.data)) return;
+    raf = requestAnimationFrame(tick);
+  }
+
+  async function startCamera() {
+    if (!window.isSecureContext) {
+      message('Kamera memerlukan HTTPS. Buka halaman NEXA melalui alamat https://.', true);
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      message('Browser ini tidak mendukung akses kamera. Coba Chrome terbaru atau masukkan kode secara manual.', true);
+      return;
+    }
+    if (!window.jsQR) {
+      message('Pemindai QR gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.', true);
+      return;
+    }
+    startBtn.disabled = true;
+    startBtn.textContent = 'MENYIAPKAN KAMERA…';
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+      video.srcObject = stream;
+      video.style.display = 'block';
+      placeholder.style.display = 'none';
+      frame.style.display = 'block';
+      await video.play();
+      scanning = true;
+      startBtn.textContent = 'KAMERA AKTIF — ARAHKAN KE QR';
+      message('Arahkan QR ke dalam kotak. Pemindaian berjalan otomatis.');
+      tick();
+    } catch (err) {
+      stopCamera();
+      message(err && err.name === 'NotAllowedError' ? 'Izin kamera ditolak. Izinkan kamera untuk situs ini melalui pengaturan browser.' : 'Kamera tidak dapat dibuka. Pastikan kamera tidak dipakai aplikasi lain.', true);
+    }
+  }
+
+  startBtn.addEventListener('click', startCamera);
+  manualBtn.addEventListener('click', () => {
+    const value = prompt('Masukkan kode kartu, contoh CARD001:');
+    if (value === null) return;
+    const code = cardFromQr(value);
+    if (!code) {
+      message('Format kode tidak dikenali. Contoh kode: CARD001.', true);
+      return;
+    }
+    window.location.href = 'manage.html?card=' + encodeURIComponent(code);
+  });
+  window.addEventListener('pagehide', stopCamera);
+})();
+</script>
+</body>
+</html>
