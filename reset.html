@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reset Kartu - NEXA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#070707;color:#fff;font-family:Arial,sans-serif}
+.container{width:92%;max-width:760px;margin:auto;padding:34px 0}
+h1{margin:0}
+.subtitle{color:#888;margin-top:7px;line-height:1.5}
+.panel,.card{background:#101010;border:1px solid #292929;border-radius:15px;padding:20px;margin-top:18px}
+label{display:block;color:#aaa;font-size:14px;margin:14px 0 7px}
+input{width:100%;padding:13px;border-radius:9px;border:1px solid #383838;background:#151515;color:#fff;font-size:16px}
+button{padding:12px 15px;border-radius:9px;border:1px solid #333;background:#202020;color:#fff;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:#fff;color:#000;border-color:#fff}
+.danger{background:#301414;color:#ff9292;border-color:#633030}
+.full{width:100%;margin-top:18px}
+.row{display:flex;gap:10px;align-items:end}
+.row>div{flex:1}
+#dashboard{display:none}
+#status,#loginStatus{min-height:22px;line-height:1.5;color:#aaa}
+.error{color:#ff6464!important}.success{color:#00e887!important}
+.notice{padding:13px;border-radius:10px;background:#241b0d;border:1px solid #493819;color:#ffd48a;line-height:1.5;font-size:13px;margin-top:15px}
+.toolbar{display:flex;gap:10px;margin-top:20px}
+.toolbar input{flex:1}
+.card-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.code{font-size:19px;font-weight:bold}
+.badge{font-size:12px;padding:6px 9px;border-radius:20px;background:#302711;color:#ffc857}
+.badge.active{background:#103023;color:#00e887}
+.details{color:#999;font-size:14px;line-height:1.7;margin-top:10px;overflow-wrap:anywhere}
+.card button{margin-top:14px;width:100%}
+small{color:#777;line-height:1.5;display:block;margin-top:10px}
+@media(max-width:540px){.row,.toolbar{flex-direction:column;align-items:stretch}.row button{width:100%}.toolbar button{width:100%}}
+</style>
+</head>
+<body>
+<div id="loginPage" class="container">
+  <h1>NEXA</h1>
+  <p class="subtitle">Halaman Reset Kartu — khusus admin</p>
+  <div class="panel">
+    <label for="email">Email Admin</label>
+    <input id="email" type="email" autocomplete="username">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password">
+    <button id="loginBtn" class="primary full">LOGIN ADMIN</button>
+    <p id="loginStatus" role="status"></p>
+  </div>
+</div>
+
+<div id="dashboard" class="container">
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <h1>Reset Kartu NEXA</h1>
+      <p class="subtitle">Halaman terpisah dari Admin Dashboard</p>
+    </div>
+    <button id="logoutBtn">LOGOUT</button>
+  </div>
+
+  <div class="notice">
+    Reset mengembalikan kartu ke status <strong>inactive</strong> dan menghapus nama bisnis, link Google Review, serta PIN yang tersimpan. Kode kartu tidak dihapus. Pastikan QR/NFC fisik kartu masih menggunakan link aktivasi yang benar.
+  </div>
+
+  <div class="panel">
+    <label for="search">Cari kartu</label>
+    <div class="toolbar">
+      <input id="search" placeholder="Contoh: CARD006 atau nama bisnis">
+      <button id="refreshBtn">MUAT ULANG</button>
+    </div>
+    <p id="status" role="status">Memeriksa sesi admin...</p>
+  </div>
+  <div id="cards"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ksalsojmvyqwhbcggejy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_BAk8-o_novmk_D73RnX26Q_cju3IBO6";
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+let cards = [];
+
+function setMessage(id, message, type = "") {
+  const el = $(id);
+  el.textContent = message;
+  el.className = type;
+}
+function normalize(value) {
+  return String(value || "").trim().toLowerCase();
+}
+function safe(value) {
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function showLogin() {
+  $("loginPage").style.display = "block";
+  $("dashboard").style.display = "none";
+}
+function showDashboard() {
+  $("loginPage").style.display = "none";
+  $("dashboard").style.display = "block";
+}
+async function verifyAdmin() {
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) { showLogin(); return false; }
+  const { data, error } = await client.rpc("is_admin");
+  if (error || data !== true) {
+    await client.auth.signOut();
+    showLogin();
+    return false;
+  }
+  showDashboard();
+  await loadCards();
+  return true;
+}
+async function login() {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) {
+    setMessage("loginStatus", "Isi email dan password admin.", "error");
+    return;
+  }
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "MEMERIKSA...";
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (error) {
+    setMessage("loginStatus", "Login gagal. Periksa email dan password.", "error");
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "LOGIN ADMIN";
+    return;
+  }
+  const { data, error: adminError } = await client.rpc("is_admin");
+  if (adminError || data !== true) {
+    await client.auth.signOut();
+    setMessage("loginStatus", "Akun ini tidak memiliki akses admin NEXA.", "error");
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "LOGIN ADMIN";
+    return;
+  }
+  $("password").value = "";
+  $("loginBtn").disabled = false;
+  $("loginBtn").textContent = "LOGIN ADMIN";
+  showDashboard();
+  await loadCards();
+}
+async function logout() {
+  await client.auth.signOut();
+  cards = [];
+  $("cards").innerHTML = "";
+  showLogin();
+}
+async function loadCards() {
+  setMessage("status", "Memuat daftar kartu...");
+  $("refreshBtn").disabled = true;
+  const { data, error } = await client.rpc("admin_list_cards");
+  $("refreshBtn").disabled = false;
+  if (error) {
+    console.error(error);
+    setMessage("status", "Gagal memuat kartu. Pastikan sesi admin masih aktif.", "error");
+    return;
+  }
+  cards = Array.isArray(data) ? data : [];
+  renderCards();
+  setMessage("status", cards.length + " kartu ditemukan.", "success");
+}
+function renderCards() {
+  const keyword = normalize($("search").value);
+  const filtered = cards.filter(card =>
+    normalize(card.card_code).includes(keyword) ||
+    normalize(card.name).includes(keyword)
+  ).sort((a,b) => String(a.card_code || "").localeCompare(String(b.card_code || ""), undefined, {numeric:true,sensitivity:"base"}));
+  const container = $("cards");
+  container.innerHTML = "";
+  if (!filtered.length) {
+    container.innerHTML = '<div class="card">Tidak ada kartu yang cocok.</div>';
+    return;
+  }
+  filtered.forEach(card => {
+    const status = normalize(card.status);
+    const el = document.createElement("article");
+    el.className = "card";
+    el.innerHTML = `
+      <div class="card-top">
+        <span class="code">${safe(card.card_code)}</span>
+        <span class="badge ${status === "active" ? "active" : ""}">${safe(status.toUpperCase() || "UNKNOWN")}</span>
+      </div>
+      <div class="details">
+        Nama bisnis: <strong>${safe(card.name || "Belum diatur")}</strong><br>
+        Link review: ${safe(card.target_url || "Belum diatur")}
+      </div>
+      <button class="danger" data-reset="${safe(card.card_code)}">RESET KARTU INI</button>
+      <small>Reset hanya dilakukan setelah konfirmasi kode kartu.</small>
+    `;
+    el.querySelector("button").addEventListener("click", () => resetCard(card.card_code));
+    container.appendChild(el);
+  });
+}
+async function resetCard(code) {
+  const first = confirm(
+    "Reset " + code + "?\n\nStatus akan kembali inactive dan nama bisnis, link Google Review, serta PIN akan dihapus."
+  );
+  if (!first) return;
+  const confirmation = prompt("Untuk memastikan, ketik kode kartu persis: " + code);
+  if (confirmation === null) return;
+  if (confirmation.trim().toUpperCase() !== String(code).toUpperCase()) {
+    setMessage("status", "Kode konfirmasi tidak cocok. Kartu tidak direset.", "error");
+    return;
+  }
+  const buttons = [...document.querySelectorAll("[data-reset]")];
+  buttons.forEach(button => button.disabled = true);
+  setMessage("status", "Mereset " + code + "...");
+  try {
+    const { data, error } = await client.rpc("admin_reset_card", { p_card_code: code });
+    if (error || data !== true) {
+      console.error(error);
+      setMessage("status", "Reset gagal. Periksa sesi admin atau fungsi reset di Supabase.", "error");
+      return;
+    }
+    setMessage("status", code + " berhasil direset.", "success");
+    await loadCards();
+  } catch (error) {
+    console.error(error);
+    setMessage("status", "Terjadi kesalahan koneksi. Reset belum dapat dipastikan.", "error");
+  } finally {
+    document.querySelectorAll("[data-reset]").forEach(button => button.disabled = false);
+  }
+}
+$("loginBtn").addEventListener("click", login);
+$("password").addEventListener("keydown", event => { if (event.key === "Enter") login(); });
+$("logoutBtn").addEventListener("click", logout);
+$("refreshBtn").addEventListener("click", loadCards);
+$("search").addEventListener("input", renderCards);
+verifyAdmin();
+</script>
+</body>
+</html>
