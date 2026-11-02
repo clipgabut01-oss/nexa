@@ -1,4 +1,21 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
+    {
+      "src": "^/$",
+      "has": [
+        {
+          "type": "query",
+          "key": "card"
+        },
+        {
+          "type": "query",
+          "key": "token"
+        }
+      ],
+      "dest": "/api/card-redirect"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
